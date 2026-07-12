@@ -131,6 +131,7 @@
 
   function poll() {
     if (!online) return;
+    mountRefreshButton(); mountBell();   // إعادة الحقن إن أزالها إعادة رسم التطبيق
     api('/api/since?ts=' + lastTs)
       .then(function (res) {
         if (res && res.data) { applyRemote(res.data); if (res.ts) lastTs = Math.max(lastTs, res.ts); }
@@ -261,4 +262,6 @@
   } else {
     boot();
   }
+  // ضمان بقاء الأزرار ظاهرة حتى لو أعاد التطبيق رسم الصفحة
+  setInterval(function () { mountRefreshButton(); mountBell(); }, 2000);
 })();
