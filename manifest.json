@@ -1,0 +1,14 @@
+{
+  "name": "نظام مؤشرات الأداء KPI",
+  "short_name": "KPI",
+  "description": "نظام إدارة ومتابعة مؤشرات الأداء المؤسسي",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0E1A33",
+  "theme_color": "#0E1A33",
+  "icons": [
+    { "src": "./favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

@@ -1,11 +1,11 @@
 {
-  "name": "kpi-system-server",
+  "name": "kpi-system",
   "version": "1.0.0",
-  "description": "خادم نظام مؤشرات الأداء - Node.js + Express + MySQL",
-  "main": "server.js",
+  "description": "نظام مؤشرات الأداء المؤسسي — Node.js + Express + MySQL",
+  "main": "app.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node server.js"
+    "start": "node app.js"
   },
   "engines": {
     "node": ">=18"
