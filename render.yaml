@@ -1,0 +1,18 @@
+# إعداد النشر التلقائي على Render — يقرأه Render عند ربط المستودع
+# ملاحظة: Render لا يوفّر MySQL مُدارًا؛ تُضاف قاعدة MySQL سحابية خارجية عبر المتغيّر MYSQL_URL.
+services:
+  - type: web
+    name: kpi-system
+    runtime: node
+    rootDir: server
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: MYSQL_URL
+        sync: false        # تُدخل يدويًا في لوحة Render (رابط قاعدة MySQL السحابية)
+      - key: NODE_VERSION
+        value: "18"

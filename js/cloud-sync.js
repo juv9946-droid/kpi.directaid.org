@@ -97,7 +97,21 @@
       .then(function () { setTimeout(poll, POLL_MS); });
   }
 
-  // ——— الإقلاع ———
+  function banner(msg, color) {
+    var id = '__kpi_conn_banner';
+    var el = document.getElementById(id);
+    if (!el) {
+      el = document.createElement('div');
+      el.id = id;
+      el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;padding:8px 14px;font-family:system-ui,sans-serif;font-size:13px;text-align:center;color:#fff';
+      document.body.appendChild(el);
+    }
+    el.style.background = color;
+    el.textContent = msg;
+    el.style.display = msg ? 'block' : 'none';
+  }
+
+  // ——— الإقلاع: القاعدة السحابية هي المصدر الوحيد للبيانات ———
   function boot() {
     api('/api/state')
       .then(function (res) {
@@ -105,14 +119,21 @@
         lastTs = res.ts || 0;
         var changed = applyRemote(res.data || {});
         window.__KPI_CLOUD__ = { online: true };
-        if (!changed) setTimeout(poll, POLL_MS); // إن لم تتغيّر، لا إعادة تحميل، فقط ابدأ الاستطلاع
+        banner('', '');
+        if (!changed) setTimeout(poll, POLL_MS);
       })
       .catch(function () {
         online = false;
         window.__KPI_CLOUD__ = { online: false };
-        // وضع محلي: النظام يعمل كما كان دون مزامنة
+        // القاعدة غير متصلة: لا نعمل بوضع محلي — ننبّه ونعيد المحاولة حتى الاتصال
+        banner('⏳ جارٍ الاتصال بقاعدة البيانات السحابية…', '#B45309');
+        setTimeout(boot, 3000);
       });
   }
 
-  boot();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
 })();
