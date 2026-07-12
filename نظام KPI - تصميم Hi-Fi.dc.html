@@ -1,0 +1,1956 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./cloud-sync.js"></script>
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#0E1A33">
+  <svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="800" fill="#0E1A33"/>
+    <rect x="470" y="300" width="120" height="120" rx="26" fill="#2563EB"/>
+    <text x="530" y="378" font-family="monospace" font-size="46" font-weight="700" fill="#fff" text-anchor="middle">KPI</text>
+    <path d="M640 360 L680 320 L720 345 L760 300" stroke="#22C55E" stroke-width="10" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="760" cy="300" r="9" fill="#22C55E"/>
+  </svg>
+</template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.1/dist/apexcharts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0}
+  .app{
+    --bg:#EEF1F8;--surface:#FFFFFF;--surface-2:#F7F9FC;--border:#E6EAF2;
+    --text:#0F172A;--text-2:#475569;--text-3:#94A3B8;
+    --primary:#2563EB;--primary-2:#1D4ED8;--primary-soft:#EAF1FF;
+    --sidebar:#0E1A33;--sidebar-2:#0A1428;--sidebar-text:#9FB0CE;
+    --ok:#16A34A;--ok-soft:#DCFCE7;--warn:#D97706;--warn-soft:#FEF3C7;--bad:#DC2626;--bad-soft:#FEE2E2;--info:#7C3AED;
+    --shadow:0 1px 2px rgba(16,24,40,.04),0 4px 16px rgba(16,24,40,.05);
+    --shadow-sm:0 1px 2px rgba(16,24,40,.06);
+    direction:rtl;font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
+  }
+  .app[data-theme="dark"]{
+    --bg:#0A101E;--surface:#131C2E;--surface-2:#0F1728;--border:#243146;
+    --text:#EEF2F8;--text-2:#9DABC4;--text-3:#647089;
+    --primary:#3B82F6;--primary-2:#2563EB;--primary-soft:#17233B;
+    --sidebar:#080D18;--sidebar-2:#050912;--sidebar-text:#8697B5;
+    --ok:#22C55E;--ok-soft:#0E2A1B;--warn:#F59E0B;--warn-soft:#2E2308;--bad:#EF4444;--bad-soft:#2E1414;--info:#A78BFA;
+    --shadow:0 1px 2px rgba(0,0,0,.5),0 8px 24px rgba(0,0,0,.4);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  }
+  .app ::-webkit-scrollbar{width:9px;height:9px}
+  .app ::-webkit-scrollbar-thumb{background:var(--border);border-radius:9px}
+  .navitem:hover{background:rgba(255,255,255,.06)!important}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .screen{animation:fadeUp .3s ease both}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-sm)}
+  .btn-p{background:var(--primary);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .btn-g{background:var(--surface);color:var(--text-2);border:1px solid var(--border);border-radius:10px;padding:9px 14px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer}
+  .btn-p:hover{background:var(--primary-2)}
+  .row:hover{background:var(--surface-2)}
+</style>
+</helmet>
+<div class="app" data-theme="{{ theme }}">
+<div style="display:flex;min-height:100vh">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside style="width:250px;flex-shrink:0;background:var(--sidebar);display:flex;flex-direction:column;position:sticky;top:0;height:100vh">
+    <div style="padding:20px 20px 14px;display:flex;align-items:center;gap:11px">
+      <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:15px;font-family:'IBM Plex Mono',monospace">KPI</div>
+      <div><div style="color:#fff;font-weight:600;font-size:14px">منصة مؤشرات الأداء</div><div style="color:var(--sidebar-text);font-size:11px">Enterprise EPM</div></div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:6px 12px 20px">
+      <div style="color:#5B6C8C;font-size:10.5px;font-weight:600;letter-spacing:.5px;padding:12px 10px 6px">إدارة العلاقات العامة والإعلام</div>
+      <div class="navitem" data-nav data-screen="marketing" onClick="{{ go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--sidebar-text);font-size:13.5px;cursor:pointer;margin-bottom:2px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-7-7 18-2.5-8.5z"/></svg>قسم التسويق</div>
+      <div class="navitem" data-nav data-screen="emarketing" onClick="{{ go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--sidebar-text);font-size:13.5px;cursor:pointer;margin-bottom:2px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M8 21h8M12 18v3"/></svg>قسم التسويق الإلكتروني</div>
+      <div class="navitem" data-nav data-screen="prmedia" onClick="{{ go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--sidebar-text);font-size:13.5px;cursor:pointer;margin-bottom:2px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a4 4 0 014 4v1a4 4 0 01-8 0V7a4 4 0 014-4zM5 20a7 7 0 0114 0"/></svg>العلاقات العامة والإعلام</div>
+      <div class="navitem" data-nav data-screen="volunteers" onClick="{{ go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--sidebar-text);font-size:13.5px;cursor:pointer;margin-bottom:2px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>شئون المتطوعين</div>
+
+      <div style="color:#5B6C8C;font-size:10.5px;font-weight:600;letter-spacing:.5px;padding:14px 10px 6px">النظام</div>
+      <div class="navitem" data-nav data-screen="integration" onClick="{{ go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--sidebar-text);font-size:13.5px;cursor:pointer;margin-bottom:2px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>مركز تكامل البيانات</div>
+      <div class="navitem" data-nav data-screen="settings" onClick="{{ go }}" style="display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:10px;color:var(--sidebar-text);font-size:13.5px;cursor:pointer;margin-bottom:2px"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>إعدادات النظام</div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <!-- topbar -->
+    <header style="height:64px;flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 24px;position:sticky;top:0;z-index:20">
+      <div style="font-size:16px;font-weight:600;color:var(--text)">{{ screenTitle }}</div>
+      <div style="flex:1"></div>
+      <div style="display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;width:260px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+        <input value="{{ search }}" onInput="{{ globalSearch }}" placeholder="بحث عن مؤشر أو كود…" style="flex:1;min-width:0;border:none;background:transparent;outline:none;font-family:inherit;font-size:13px;color:var(--text)">
+      </div>
+      <button onClick="{{ toggleTheme }}" class="btn-g" style="width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center">{{ themeIcon }}</button>
+      <div style="position:relative">
+        <div onClick="{{ toggleBell }}" style="position:relative;width:40px;height:40px;border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--surface)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-2)" stroke-width="2"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 01-3.4 0"/></svg>
+          <sc-if value="{{ hasAlerts }}" hint-placeholder-val="{{ true }}"><span style="position:absolute;top:6px;left:7px;min-width:15px;height:15px;padding:0 3px;background:var(--bad);color:#fff;font-size:9px;font-weight:700;border-radius:9px;border:2px solid var(--surface);display:flex;align-items:center;justify-content:center">{{ alertCount }}</span></sc-if>
+        </div>
+        <sc-if value="{{ bellOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="position:absolute;top:48px;left:0;width:340px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);z-index:40;overflow:hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border)"><span style="font-weight:600;font-size:13.5px">الإشعارات</span><span onClick="{{ toggleBell }}" style="font-size:12px;color:var(--text-3);cursor:pointer">✕</span></div>
+          <div style="max-height:340px;overflow-y:auto">
+            <sc-for list="{{ alerts }}" as="n" hint-placeholder-count="3">
+              <div class="row" style="display:flex;gap:11px;align-items:flex-start;padding:13px 16px;border-bottom:1px solid var(--border)">
+                <span style="width:32px;height:32px;flex-shrink:0;border-radius:9px;background:{{ n.bg }};display:flex;align-items:center;justify-content:center;color:{{ n.color }};font-weight:700;font-size:14px">{{ n.icon }}</span>
+                <div style="flex:1"><div style="font-size:12.8px;font-weight:600;line-height:1.5">{{ n.title }}</div><div style="font-size:11.5px;color:var(--text-2);margin-top:2px;line-height:1.6">{{ n.desc }}</div><div style="font-size:10.5px;color:var(--text-3);margin-top:4px">{{ n.time }}</div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div onClick="{{ go }}" data-screen="settings" style="padding:11px 16px;text-align:center;font-size:12px;color:var(--primary-2);cursor:pointer;background:var(--surface-2)">إعدادات الإشعارات</div>
+        </div>
+        </sc-if>
+      </div>
+    </header>
+
+    <main style="flex:1;padding:24px;overflow-x:hidden">
+
+      <sc-if value="{{ isMarketing }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;margin-bottom:16px;background:{{ fillReminder.bg }};border:1px solid var(--border)">
+        <span style="width:32px;height:32px;flex-shrink:0;border-radius:9px;background:var(--surface);display:flex;align-items:center;justify-content:center;color:{{ fillReminder.color }};font-size:16px">⏱</span>
+        <div style="flex:1;font-size:12.8px;color:var(--text)"><strong>{{ fillReminder.title }}</strong> — {{ fillReminder.desc }}</div>
+        <span style="font-size:11px;color:var(--text-3);white-space:nowrap">{{ fillReminder.time }}</span>
+      </div>
+      </sc-if>
+
+      <!-- ============ EXEC DASHBOARD ============ -->
+      <sc-if value="{{ isExec }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+          <div><div style="font-size:22px;font-weight:700">أداء المؤسسة · 2026</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">نظرة تنفيذية شاملة على تحقيق الاستراتيجية والأداء التشغيلي</div></div>
+          <div style="display:flex;gap:8px"><button class="btn-g">الربع الثاني ▾</button><button class="btn-p">تصدير التقرير</button></div>
+        </div>
+
+        <!-- KPI stat cards -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
+          <div class="card" style="padding:18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="color:var(--text-2);font-size:12.5px">تحقيق الاستراتيجية</span><span style="width:30px;height:30px;border-radius:9px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M22 12A10 10 0 1112 2v10z"/></svg></span></div>
+            <div style="font-size:28px;font-weight:700">78%</div>
+            <div style="font-size:12px;color:var(--ok);margin-top:4px">▲ 6% عن الربع السابق</div>
+          </div>
+          <div class="card" style="padding:18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="color:var(--text-2);font-size:12.5px">إجمالي المؤشرات</span><span style="width:30px;height:30px;border-radius:9px;background:var(--primary-soft);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.2"><path d="M3 3v18h18"/><path d="M7 13l3-3 3 2 5-6"/></svg></span></div>
+            <div style="font-size:28px;font-weight:700">142</div>
+            <div style="font-size:12px;color:var(--text-2);margin-top:4px">عبر 9 إدارات</div>
+          </div>
+          <div class="card" style="padding:18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="color:var(--text-2);font-size:12.5px">مؤشرات متعثّرة</span><span style="width:30px;height:30px;border-radius:9px;background:var(--warn-soft);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--warn)" stroke-width="2.2"><path d="M12 3l9 16H3z"/><path d="M12 10v4"/></svg></span></div>
+            <div style="font-size:28px;font-weight:700">18</div>
+            <div style="font-size:12px;color:var(--warn);margin-top:4px">تحتاج خطة تصحيحية</div>
+          </div>
+          <div class="card" style="padding:18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><span style="color:var(--text-2);font-size:12.5px">مؤشرات حرجة</span><span style="width:30px;height:30px;border-radius:9px;background:var(--bad-soft);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--bad)" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 15v.5"/></svg></span></div>
+            <div style="font-size:28px;font-weight:700">6</div>
+            <div style="font-size:12px;color:var(--bad);margin-top:4px">أقل من الحد الأدنى</div>
+          </div>
+        </div>
+
+        <!-- charts row -->
+        <div style="display:grid;grid-template-columns:1.7fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card" style="padding:18px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><div style="font-weight:600;font-size:14px">اتجاه الأداء العام</div><div style="font-size:12px;color:var(--text-3)">نسبة الإنجاز الشهرية</div></div>
+            <div id="ch-trend" style="min-height:250px"></div>
+          </div>
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:6px">تحقيق الاستراتيجية</div>
+            <div id="ch-gauge" style="min-height:250px"></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:6px">الأداء حسب محاور BSC</div>
+            <div id="ch-bsc" style="min-height:250px"></div>
+          </div>
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:6px">حالة المشاريع والمبادرات</div>
+            <div id="ch-status" style="min-height:250px"></div>
+          </div>
+        </div>
+
+        <!-- bottom: departments + risks + AI -->
+        <div style="display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:16px">
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:14px">أداء الإدارات</div>
+            <sc-for list="{{ depts }}" as="d" hint-placeholder-count="5">
+              <div style="margin-bottom:13px">
+                <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px"><span style="color:var(--text)">{{ d.name }}</span><span style="color:var(--text-2);font-weight:600">{{ d.pct }}</span></div>
+                <div style="height:7px;background:var(--surface-2);border-radius:9px;overflow:hidden"><div style="height:100%;border-radius:9px;width:{{ d.w }};background:{{ d.color }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:12px">أعلى المخاطر</div>
+            <sc-for list="{{ risks }}" as="r" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+                <span style="width:9px;height:9px;border-radius:50%;background:{{ r.color }};flex-shrink:0"></span>
+                <span style="flex:1;font-size:12.5px;color:var(--text)">{{ r.name }}</span>
+                <span style="font-size:11px;font-weight:600;color:{{ r.color }}">{{ r.level }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div class="card" style="padding:18px;background:linear-gradient(160deg,var(--primary-soft),var(--surface));border-color:var(--primary)">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/></svg><span style="font-weight:600;font-size:14px;color:var(--primary-2)">ملخص ذكي</span></div>
+            <p style="margin:0;font-size:12.8px;line-height:1.8;color:var(--text-2)">حقّقت المؤسسة <strong style="color:var(--text)">78%</strong> من مستهدفاتها. تتصدّر إدارة العمليات، بينما تحتاج إدارة خدمة العملاء تدخّلًا في مؤشري زمن الاستجابة. يُتوقّع بلوغ <strong style="color:var(--text)">84%</strong> بنهاية العام حال معالجة المؤشرات الستة الحرجة.</p>
+            <button onClick="{{ go }}" data-screen="ai" class="btn-p" style="margin-top:14px;width:100%">افتح المساعد الذكي</button>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- other screens injected below -->
+      <sc-if value="{{ isKpis }}" hint-placeholder-val="{{ true }}">
+      <!-- ===== KPI LIBRARY LIST ===== -->
+      <sc-if value="{{ isList }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div><div style="font-size:22px;font-weight:700">مكتبة مؤشرات الأداء</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">142 مؤشرًا · مصنّفة حسب الإدارة ومحور بطاقة الأداء المتوازنة</div></div>
+          <button class="btn-p">+ مؤشر جديد</button>
+        </div>
+        <!-- filters -->
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+          <div class="btn-g" style="display:flex;align-items:center;gap:6px">الإدارة: الكل ▾</div>
+          <div class="btn-g" style="display:flex;align-items:center;gap:6px">المحور: الكل ▾</div>
+          <div class="btn-g" style="display:flex;align-items:center;gap:6px">الحالة: الكل ▾</div>
+          <div class="btn-g" style="display:flex;align-items:center;gap:6px">السنة: 2026 ▾</div>
+        </div>
+        <div class="card" style="overflow:hidden">
+          <div style="display:grid;grid-template-columns:2.4fr 1.2fr .9fr 1fr 1.4fr .7fr;gap:12px;padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2)">
+            <div>المؤشر</div><div>الإدارة</div><div>المحور</div><div>الإنجاز</div><div>الاتجاه</div><div>الحالة</div>
+          </div>
+          <sc-for list="{{ kpiList }}" as="k" hint-placeholder-count="8">
+            <div class="row" onClick="{{ openCard }}" style="display:grid;grid-template-columns:2.4fr 1.2fr .9fr 1fr 1.4fr .7fr;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);font-size:13px;align-items:center;cursor:pointer">
+              <div><div style="font-weight:600;color:var(--text)">{{ k.name }}</div><div style="font-size:11px;color:var(--text-3);font-family:'IBM Plex Mono',monospace;direction:ltr">{{ k.code }}</div></div>
+              <div style="color:var(--text-2)">{{ k.dept }}</div>
+              <div><span style="font-size:11px;padding:3px 8px;border-radius:6px;background:var(--primary-soft);color:var(--primary-2)">{{ k.bsc }}</span></div>
+              <div style="font-weight:700;color:{{ k.color }}">{{ k.pct }}</div>
+              <div><div style="height:6px;background:var(--surface-2);border-radius:6px;overflow:hidden;width:100%"><div style="height:100%;border-radius:6px;width:{{ k.pct }};background:{{ k.color }}"></div></div></div>
+              <div><span style="font-size:11px;font-weight:600;padding:4px 9px;border-radius:999px;background:{{ k.badgeBg }};color:{{ k.color }}">{{ k.status }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ===== KPI CARD DETAIL ===== -->
+      <sc-if value="{{ isCard }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-2);margin-bottom:14px">
+          <span onClick="{{ backToList }}" style="cursor:pointer;color:var(--primary)">مكتبة المؤشرات</span><span>/</span><span>بطاقة المؤشر</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div>
+            <div style="display:flex;align-items:center;gap:12px"><div style="font-size:22px;font-weight:700">نسبة رضا المستفيدين</div><span style="font-size:12px;font-weight:600;padding:4px 11px;border-radius:999px;background:var(--warn-soft);color:var(--warn)">متعثّر</span></div>
+            <div style="color:var(--text-3);font-size:12.5px;margin-top:4px;font-family:'IBM Plex Mono',monospace;direction:ltr">KPI-CS-014 · محور المستفيدون · إدارة خدمة العملاء</div>
+          </div>
+          <div style="display:flex;gap:8px"><button class="btn-g">إدخال نتيجة</button><button class="btn-p">إنشاء خطة تصحيحية</button></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card" style="padding:16px"><div style="color:var(--text-2);font-size:12px;margin-bottom:6px">القيمة الحالية</div><div style="font-size:24px;font-weight:700">72%</div></div>
+          <div class="card" style="padding:16px"><div style="color:var(--text-2);font-size:12px;margin-bottom:6px">المستهدف</div><div style="font-size:24px;font-weight:700">90%</div></div>
+          <div class="card" style="padding:16px"><div style="color:var(--text-2);font-size:12px;margin-bottom:6px">نسبة الإنجاز</div><div style="font-size:24px;font-weight:700;color:var(--warn)">80%</div></div>
+          <div class="card" style="padding:16px"><div style="color:var(--text-2);font-size:12px;margin-bottom:6px">الانحراف</div><div style="font-size:24px;font-weight:700;color:var(--bad)">−18%</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.7fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:6px">الأداء التاريخي مقابل المستهدف</div>
+            <div id="ch-card-trend" style="min-height:280px"></div>
+          </div>
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:14px">البيانات الأساسية</div>
+            <sc-for list="{{ cardMeta }}" as="m" hint-placeholder-count="6">
+              <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);font-size:12.8px"><span style="color:var(--text-2)">{{ m.k }}</span><span style="color:var(--text);font-weight:500">{{ m.v }}</span></div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- tabs -->
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="display:flex;gap:2px;border-bottom:1px solid var(--border);padding:6px 10px;background:var(--surface-2)">
+            <div onClick="{{ setTab }}" data-tab="history" class="tabbtn" style="padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500">النتائج التاريخية</div>
+            <div onClick="{{ setTab }}" data-tab="plan" class="tabbtn" style="padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500">خطة التحسين</div>
+            <div onClick="{{ setTab }}" data-tab="files" class="tabbtn" style="padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500">الملفات</div>
+            <div onClick="{{ setTab }}" data-tab="comments" class="tabbtn" style="padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500">التعليقات</div>
+            <div onClick="{{ setTab }}" data-tab="log" class="tabbtn" style="padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;font-weight:500">سجل التعديلات</div>
+          </div>
+          <div style="padding:18px">
+            <sc-if value="{{ tabHistory }}" hint-placeholder-val="{{ true }}">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;font-size:12.5px;font-weight:600;color:var(--text-2);padding-bottom:10px;border-bottom:1px solid var(--border)"><div>الفترة</div><div>الفعلي</div><div>الإنجاز</div><div>الاعتماد</div></div>
+              <sc-for list="{{ history }}" as="h" hint-placeholder-count="4">
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;font-size:13px;padding:11px 0;border-bottom:1px solid var(--border)"><div style="color:var(--text)">{{ h.period }}</div><div style="color:var(--text)">{{ h.actual }}</div><div style="color:{{ h.color }};font-weight:600">{{ h.pct }}</div><div style="color:var(--ok)">{{ h.approved }}</div></div>
+              </sc-for>
+            </sc-if>
+            <sc-if value="{{ tabPlan }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:12px;margin-bottom:10px">
+                <span style="width:10px;height:10px;border-radius:50%;background:var(--warn);margin-top:5px"></span>
+                <div style="flex:1"><div style="font-weight:600;font-size:13.5px">تحسين زمن الاستجابة للمكالمات</div><div style="font-size:12.5px;color:var(--text-2);margin-top:4px">المسؤول: نورة القحطاني · الاستحقاق: 30 سبتمبر · الإنجاز 45%</div><div style="height:6px;background:var(--surface-2);border-radius:6px;margin-top:8px;overflow:hidden"><div style="height:100%;width:45%;background:var(--warn);border-radius:6px"></div></div></div>
+              </div>
+              <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid var(--border);border-radius:12px">
+                <span style="width:10px;height:10px;border-radius:50%;background:var(--ok);margin-top:5px"></span>
+                <div style="flex:1"><div style="font-weight:600;font-size:13.5px">تدريب فريق الدعم على نظام التذاكر</div><div style="font-size:12.5px;color:var(--text-2);margin-top:4px">المسؤول: خالد العتيبي · الاستحقاق: 15 أغسطس · الإنجاز 90%</div><div style="height:6px;background:var(--surface-2);border-radius:6px;margin-top:8px;overflow:hidden"><div style="height:100%;width:90%;background:var(--ok);border-radius:6px"></div></div></div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ tabFiles }}" hint-placeholder-val="{{ true }}"><div style="color:var(--text-2);font-size:13px">3 ملفات مرفقة · تقرير الربع الثاني.pdf · بيانات المكالمات.xlsx · خطة التحسين.docx</div></sc-if>
+            <sc-if value="{{ tabComments }}" hint-placeholder-val="{{ true }}"><div style="color:var(--text-2);font-size:13px">آخر تعليق من مدير الإدارة: «يجب تسريع خطة التدريب قبل نهاية الربع».</div></sc-if>
+            <sc-if value="{{ tabLog }}" hint-placeholder-val="{{ true }}"><div style="color:var(--text-2);font-size:13px;line-height:2">تعديل القيمة الفعلية — نورة القحطاني — 2026/07/01<br>اعتماد نتيجة يونيو — أحمد الشمري — 2026/07/03</div></sc-if>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      </sc-if>
+      <sc-if value="{{ isStrategy }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="margin-bottom:18px"><div style="font-size:22px;font-weight:700">الخريطة الاستراتيجية</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">من الرؤية إلى النتائج — سلسلة القيمة المؤسسية المترابطة</div></div>
+        <div class="card" style="padding:26px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0">
+            <div style="background:linear-gradient(135deg,#1E3A8A,#3B82F6);color:#fff;padding:12px 34px;border-radius:12px;font-weight:600;font-size:15px;box-shadow:var(--shadow)">الرؤية · الريادة في التميز المؤسسي 2030</div>
+            <div style="width:2px;height:22px;background:var(--border)"></div>
+            <div style="display:flex;gap:12px"><div style="background:var(--surface-2);border:1px solid var(--border);padding:9px 22px;border-radius:10px;font-size:13px;font-weight:500">الرسالة</div><div style="background:var(--surface-2);border:1px solid var(--border);padding:9px 22px;border-radius:10px;font-size:13px;font-weight:500">القيم</div></div>
+            <div style="width:2px;height:22px;background:var(--border)"></div>
+            <div style="font-size:11px;color:var(--text-3);font-weight:600;margin-bottom:8px">المحاور الاستراتيجية (محاور BSC)</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;width:100%">
+              <div style="border-top:3px solid var(--primary);background:var(--surface-2);border-radius:12px;padding:14px"><div style="font-weight:600;color:var(--primary-2);margin-bottom:8px;font-size:13px">المالي</div><div style="font-size:11.5px;color:var(--text-2);line-height:1.9">◦ تعظيم العائد<br>◦ ضبط الإنفاق</div><div style="margin-top:10px;font-size:11px;color:var(--ok);font-weight:600">الإنجاز 88%</div></div>
+              <div style="border-top:3px solid var(--ok);background:var(--surface-2);border-radius:12px;padding:14px"><div style="font-weight:600;color:var(--ok);margin-bottom:8px;font-size:13px">المستفيدون</div><div style="font-size:11.5px;color:var(--text-2);line-height:1.9">◦ رضا العملاء<br>◦ جودة الخدمة</div><div style="margin-top:10px;font-size:11px;color:var(--warn);font-weight:600">الإنجاز 74%</div></div>
+              <div style="border-top:3px solid var(--warn);background:var(--surface-2);border-radius:12px;padding:14px"><div style="font-weight:600;color:var(--warn);margin-bottom:8px;font-size:13px">العمليات</div><div style="font-size:11.5px;color:var(--text-2);line-height:1.9">◦ كفاءة العمليات<br>◦ التحول الرقمي</div><div style="margin-top:10px;font-size:11px;color:var(--ok);font-weight:600">الإنجاز 82%</div></div>
+              <div style="border-top:3px solid var(--info);background:var(--surface-2);border-radius:12px;padding:14px"><div style="font-weight:600;color:var(--info);margin-bottom:8px;font-size:13px">التعلم والنمو</div><div style="font-size:11.5px;color:var(--text-2);line-height:1.9">◦ تطوير الكفاءات<br>◦ الابتكار</div><div style="margin-top:10px;font-size:11px;color:var(--warn);font-weight:600">الإنجاز 69%</div></div>
+            </div>
+            <div style="width:2px;height:22px;background:var(--border)"></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+              <div style="background:var(--ok-soft);color:var(--ok);padding:8px 18px;border-radius:999px;font-size:12.5px;font-weight:500">مبادرة: التميز في الخدمة</div>
+              <div style="background:var(--ok-soft);color:var(--ok);padding:8px 18px;border-radius:999px;font-size:12.5px;font-weight:500">مبادرة: الحوكمة الرقمية</div>
+              <div style="background:var(--ok-soft);color:var(--ok);padding:8px 18px;border-radius:999px;font-size:12.5px;font-weight:500">مبادرة: تنمية الكوادر</div>
+            </div>
+            <div style="width:2px;height:22px;background:var(--border)"></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+              <div style="background:var(--primary-soft);color:var(--primary-2);padding:7px 16px;border-radius:8px;font-size:12px">مشروع بوابة العملاء</div>
+              <div style="background:var(--primary-soft);color:var(--primary-2);padding:7px 16px;border-radius:8px;font-size:12px">مشروع أتمتة العمليات</div>
+              <div style="background:var(--warn-soft);color:var(--warn);padding:7px 16px;border-radius:8px;font-size:12px">مشروع التحول الرقمي ⚠</div>
+            </div>
+            <div style="width:2px;height:22px;background:var(--border)"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+              <div style="background:var(--surface-2);border:1px solid var(--border);padding:6px 14px;border-radius:7px;font-size:11.5px">142 مؤشر أداء</div>
+              <div style="background:var(--surface-2);border:1px solid var(--border);padding:6px 14px;border-radius:7px;font-size:11.5px">→ مهام</div>
+              <div style="background:var(--surface-2);border:1px solid var(--border);padding:6px 14px;border-radius:7px;font-size:11.5px">→ نتائج</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isInitiatives }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div><div style="font-size:22px;font-weight:700">المبادرات الاستراتيجية</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">12 مبادرة نشطة · مرتبطة بالأهداف والمشاريع والمؤشرات</div></div>
+          <button class="btn-p">+ مبادرة جديدة</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+          <sc-for list="{{ initList }}" as="i" hint-placeholder-count="6">
+            <div class="card" style="padding:18px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+                <span style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:{{ i.prBg }};color:{{ i.prColor }}">{{ i.priority }}</span>
+                <span style="font-size:11px;color:var(--text-3)">{{ i.dept }}</span>
+              </div>
+              <div style="font-weight:600;font-size:14.5px;margin-bottom:6px">{{ i.name }}</div>
+              <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">{{ i.objective }}</div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px"><span style="color:var(--text-2)">الإنجاز</span><span style="font-weight:600;color:{{ i.color }}">{{ i.pct }}</span></div>
+              <div style="height:7px;background:var(--surface-2);border-radius:9px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:{{ i.pct }};background:{{ i.color }};border-radius:9px"></div></div>
+              <div style="display:flex;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border);font-size:12px">
+                <div><div style="color:var(--text-3);font-size:10.5px">الميزانية</div><div style="font-weight:600">{{ i.budget }}</div></div>
+                <div style="text-align:left"><div style="color:var(--text-3);font-size:10.5px">المصروف</div><div style="font-weight:600">{{ i.spent }}</div></div>
+                <div style="text-align:left"><div style="color:var(--text-3);font-size:10.5px">المشاريع</div><div style="font-weight:600">{{ i.projects }}</div></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isProjects }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div><div style="font-size:22px;font-weight:700">مكتب إدارة المشاريع · PMO</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">الجدول الزمني للمشاريع مقابل المبادرات — الربع الثاني/الثالث 2026</div></div>
+          <button class="btn-p">+ مشروع جديد</button>
+        </div>
+        <div class="card" style="padding:18px 22px;overflow-x:auto">
+          <!-- month header -->
+          <div style="display:grid;grid-template-columns:220px repeat(6,1fr);gap:0;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:6px;min-width:760px">
+            <div style="font-size:12px;font-weight:600;color:var(--text-2)">المشروع</div>
+            <div style="font-size:11.5px;color:var(--text-3);text-align:center">أبريل</div>
+            <div style="font-size:11.5px;color:var(--text-3);text-align:center">مايو</div>
+            <div style="font-size:11.5px;color:var(--text-3);text-align:center">يونيو</div>
+            <div style="font-size:11.5px;color:var(--text-3);text-align:center">يوليو</div>
+            <div style="font-size:11.5px;color:var(--text-3);text-align:center">أغسطس</div>
+            <div style="font-size:11.5px;color:var(--text-3);text-align:center">سبتمبر</div>
+          </div>
+          <sc-for list="{{ ganttRows }}" as="g" hint-placeholder-count="5">
+            <div style="display:grid;grid-template-columns:220px 1fr;gap:0;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);min-width:760px">
+              <div><div style="font-weight:600;font-size:13px">{{ g.name }}</div><div style="font-size:11px;color:var(--text-3)">{{ g.owner }}</div></div>
+              <div style="position:relative;height:26px">
+                <div style="position:absolute;top:4px;height:18px;border-radius:6px;right:{{ g.offset }};width:{{ g.width }};background:{{ g.color }};display:flex;align-items:center;padding:0 8px;color:#fff;font-size:10.5px;font-weight:600">{{ g.pct }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:16px">
+          <div class="card" style="padding:16px"><div style="color:var(--text-2);font-size:12px;margin-bottom:6px">مشاريع نشطة</div><div style="font-size:24px;font-weight:700">14</div></div>
+          <div class="card" style="padding:16px"><div style="color:var(--text-2);font-size:12px;margin-bottom:6px">في الموعد</div><div style="font-size:24px;font-weight:700;color:var(--ok)">9</div></div>
+          <div class="card" style="padding:16px"><div style="color:var(--text-2);font-size:12px;margin-bottom:6px">متأخرة</div><div style="font-size:24px;font-weight:700;color:var(--warn)">4</div></div>
+          <div class="card" style="padding:16px"><div style="color:var(--text-2);font-size:12px;margin-bottom:6px">متعثرة</div><div style="font-size:24px;font-weight:700;color:var(--bad)">1</div></div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isRisks }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div><div style="font-size:22px;font-weight:700">سجل المخاطر المؤسسية</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">تقييم المخاطر (احتمال × أثر) وربطها بالمؤشرات والمشاريع</div></div>
+          <button class="btn-p">+ تسجيل مخاطرة</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px">
+          <div class="card" style="overflow:hidden">
+            <div style="display:grid;grid-template-columns:2.2fr 1fr 1fr 1.1fr;gap:10px;padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2)"><div>المخاطرة</div><div>الاحتمال</div><div>الأثر</div><div>الخطورة</div></div>
+            <sc-for list="{{ riskRows }}" as="r" hint-placeholder-count="6">
+              <div class="row" style="display:grid;grid-template-columns:2.2fr 1fr 1fr 1.1fr;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border);font-size:12.8px;align-items:center">
+                <div><div style="font-weight:600">{{ r.name }}</div><div style="font-size:11px;color:var(--text-3)">{{ r.link }}</div></div>
+                <div style="color:var(--text-2)">{{ r.prob }}</div>
+                <div style="color:var(--text-2)">{{ r.impact }}</div>
+                <div><span style="font-size:11px;font-weight:600;padding:4px 11px;border-radius:999px;background:{{ r.bg }};color:{{ r.color }}">{{ r.level }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:14px">مصفوفة المخاطر</div>
+            <div style="display:grid;grid-template-columns:20px repeat(5,1fr);gap:4px">
+              <div></div><div style="text-align:center;font-size:10px;color:var(--text-3)">1</div><div style="text-align:center;font-size:10px;color:var(--text-3)">2</div><div style="text-align:center;font-size:10px;color:var(--text-3)">3</div><div style="text-align:center;font-size:10px;color:var(--text-3)">4</div><div style="text-align:center;font-size:10px;color:var(--text-3)">5</div>
+              <div style="font-size:10px;color:var(--text-3);display:flex;align-items:center">5</div><div style="height:34px;background:#FCD34D;border-radius:5px"></div><div style="height:34px;background:#FB923C;border-radius:5px"></div><div style="height:34px;background:#F87171;border-radius:5px"></div><div style="height:34px;background:#EF4444;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700">1</div><div style="height:34px;background:#DC2626;border-radius:5px"></div>
+              <div style="font-size:10px;color:var(--text-3);display:flex;align-items:center">4</div><div style="height:34px;background:#FDE68A;border-radius:5px"></div><div style="height:34px;background:#FCD34D;border-radius:5px"></div><div style="height:34px;background:#FB923C;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700">2</div><div style="height:34px;background:#F87171;border-radius:5px"></div><div style="height:34px;background:#EF4444;border-radius:5px"></div>
+              <div style="font-size:10px;color:var(--text-3);display:flex;align-items:center">3</div><div style="height:34px;background:#BBF7D0;border-radius:5px"></div><div style="height:34px;background:#FDE68A;border-radius:5px"></div><div style="height:34px;background:#FCD34D;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#78350F;font-size:11px;font-weight:700">2</div><div style="height:34px;background:#FB923C;border-radius:5px"></div><div style="height:34px;background:#F87171;border-radius:5px"></div>
+              <div style="font-size:10px;color:var(--text-3);display:flex;align-items:center">2</div><div style="height:34px;background:#86EFAC;border-radius:5px"></div><div style="height:34px;background:#BBF7D0;border-radius:5px"></div><div style="height:34px;background:#FDE68A;border-radius:5px"></div><div style="height:34px;background:#FCD34D;border-radius:5px"></div><div style="height:34px;background:#FB923C;border-radius:5px"></div>
+              <div style="font-size:10px;color:var(--text-3);display:flex;align-items:center">1</div><div style="height:34px;background:#4ADE80;border-radius:5px"></div><div style="height:34px;background:#86EFAC;border-radius:5px"></div><div style="height:34px;background:#BBF7D0;border-radius:5px"></div><div style="height:34px;background:#FDE68A;border-radius:5px"></div><div style="height:34px;background:#FCD34D;border-radius:5px"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:10px;font-size:10.5px;color:var(--text-3)"><span>← الاحتمال</span><span>الأثر ↑</span></div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isTasks }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div><div style="font-size:22px;font-weight:700">لوحة المهام</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">مهام مرتبطة بالمؤشرات والمشاريع والاجتماعات والخطط التصحيحية</div></div>
+          <button class="btn-p">+ مهمة</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+          <sc-for list="{{ taskCols }}" as="c" hint-placeholder-count="4">
+            <div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:0 4px"><span style="width:9px;height:9px;border-radius:50%;background:{{ c.color }}"></span><span style="font-weight:600;font-size:13px">{{ c.title }}</span><span style="font-size:11px;color:var(--text-3);background:var(--surface-2);padding:1px 8px;border-radius:999px">{{ c.count }}</span></div>
+              <sc-for list="{{ c.items }}" as="t" hint-placeholder-count="3">
+                <div class="card" style="padding:13px;margin-bottom:10px">
+                  <div style="font-size:10.5px;color:var(--text-3);margin-bottom:5px">{{ t.tag }}</div>
+                  <div style="font-size:13px;font-weight:500;line-height:1.5;margin-bottom:10px">{{ t.title }}</div>
+                  <div style="display:flex;align-items:center;justify-content:space-between">
+                    <span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;background:{{ t.prBg }};color:{{ t.prColor }}">{{ t.priority }}</span>
+                    <div style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;color:var(--text-3)">{{ t.due }}</span><span style="width:22px;height:22px;border-radius:50%;background:var(--primary-soft);color:var(--primary-2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600">{{ t.who }}</span></div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isAi }}" hint-placeholder-val="{{ true }}">
+      <div class="screen" style="max-width:900px;margin:0 auto">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7C3AED,#3B82F6);display:flex;align-items:center;justify-content:center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/></svg></div>
+          <div><div style="font-size:22px;font-weight:700">المساعد الذكي</div><div style="color:var(--text-2);font-size:13px">تحليل الأداء والتنبؤ وكتابة التقارير باللغة العربية</div></div>
+        </div>
+        <!-- quick actions -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
+          <div class="btn-g" style="text-align:center;padding:14px 8px;flex-direction:column;font-size:12px">تحليل الانخفاض</div>
+          <div class="btn-g" style="text-align:center;padding:14px 8px;font-size:12px">توقّع نهاية السنة</div>
+          <div class="btn-g" style="text-align:center;padding:14px 8px;font-size:12px">تقرير تنفيذي</div>
+          <div class="btn-g" style="text-align:center;padding:14px 8px;font-size:12px">ملخص في دقيقة</div>
+        </div>
+        <!-- chat -->
+        <div class="card" style="padding:20px">
+          <div style="display:flex;gap:12px;margin-bottom:18px;justify-content:flex-start">
+            <div style="max-width:78%;background:var(--primary);color:#fff;padding:12px 16px;border-radius:14px 14px 4px 14px;font-size:13px;line-height:1.7">لماذا انخفض مؤشر رضا المستفيدين هذا الربع؟</div>
+          </div>
+          <div style="display:flex;gap:12px;margin-bottom:6px">
+            <div style="width:32px;height:32px;flex-shrink:0;border-radius:9px;background:linear-gradient(135deg,#7C3AED,#3B82F6);display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6z"/></svg></div>
+            <div style="max-width:82%;background:var(--surface-2);border:1px solid var(--border);padding:14px 16px;border-radius:14px 14px 14px 4px;font-size:13px;line-height:1.9;color:var(--text)">
+              انخفض المؤشر إلى <strong>72%</strong> (المستهدف 90%) بانحراف −18%. أبرز الأسباب:
+              <div style="margin:10px 0 4px;padding-right:6px">
+                <div style="margin-bottom:6px">◦ ارتفاع <strong>زمن الاستجابة للمكالمات</strong> بنسبة 34% (مؤشر حرج مرتبط).</div>
+                <div style="margin-bottom:6px">◦ تأخّر مشروع <strong>بوابة العملاء</strong> عن جدوله بأسبوعين.</div>
+                <div>◦ نقص كوادر الدعم خلال فترة الذروة.</div>
+              </div>
+              <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)"><strong style="color:var(--primary-2)">التوصية:</strong> تسريع خطة التدريب واستكمال بوابة العملاء يرفعان المؤشر إلى ~85% بنهاية العام.</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:18px;border:1px solid var(--border);border-radius:12px;padding:8px 14px;background:var(--surface-2)">
+            <input placeholder="اكتب سؤالك…" style="flex:1;border:none;background:transparent;outline:none;font-family:inherit;font-size:13px;color:var(--text)">
+            <button class="btn-p" style="padding:8px 18px">إرسال</button>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+      <sc-if value="{{ isReports }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="margin-bottom:18px"><div style="font-size:22px;font-weight:700">مركز التقارير</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">تقارير احترافية قابلة للتصدير PDF · Excel · Word</div></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+          <sc-for list="{{ reportList }}" as="r" hint-placeholder-count="9">
+            <div class="card row" style="padding:18px;cursor:pointer;display:flex;gap:14px;align-items:flex-start">
+              <div style="width:42px;height:42px;flex-shrink:0;border-radius:11px;background:{{ r.bg }};display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{ r.color }}" stroke-width="2"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5"/></svg></div>
+              <div style="flex:1"><div style="font-weight:600;font-size:14px;margin-bottom:4px">{{ r.name }}</div><div style="font-size:12px;color:var(--text-2);line-height:1.6">{{ r.desc }}</div>
+                <div style="display:flex;gap:6px;margin-top:12px"><span style="font-size:10.5px;padding:3px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2)">PDF</span><span style="font-size:10.5px;padding:3px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2)">Excel</span><span style="font-size:10.5px;padding:3px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text-2)">Word</span></div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ DATA ENTRY ============ -->
+      <sc-if value="{{ isDataentry }}" hint-placeholder-val="{{ true }}">
+      <div class="screen" style="max-width:1000px">
+        <div style="margin-bottom:18px"><div style="font-size:22px;font-weight:700">إدخال نتائج المؤشرات</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">احتساب تلقائي لنسبة الإنجاز والانحراف والأداء التراكمي</div></div>
+        <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px">
+          <div class="card" style="padding:22px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:16px">نموذج الإدخال</div>
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div><label style="font-size:12px;color:var(--text-2);display:block;margin-bottom:6px">المؤشر</label><div style="border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:13px;background:var(--surface-2);display:flex;justify-content:space-between;color:var(--text)">نسبة رضا المستفيدين — KPI-CS-014 <span style="color:var(--text-3)">▾</span></div></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div><label style="font-size:12px;color:var(--text-2);display:block;margin-bottom:6px">الفترة</label><div style="border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:13px;background:var(--surface-2);display:flex;justify-content:space-between;color:var(--text)">يوليو 2026 <span style="color:var(--text-3)">▾</span></div></div>
+                <div><label style="font-size:12px;color:var(--text-2);display:block;margin-bottom:6px">نوع الإدخال</label><div style="border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:13px;background:var(--surface-2);display:flex;justify-content:space-between;color:var(--text)">شهري <span style="color:var(--text-3)">▾</span></div></div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div><label style="font-size:12px;color:var(--text-2);display:block;margin-bottom:6px">القيمة الفعلية</label><input onInput="{{ onActual }}" value="{{ entryActual }}" type="number" style="width:100%;border:2px solid var(--primary);border-radius:10px;padding:10px 13px;font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;font-weight:600"></div>
+                <div><label style="font-size:12px;color:var(--text-2);display:block;margin-bottom:6px">المستهدف</label><div style="border:1px solid var(--border);border-radius:10px;padding:11px 13px;font-size:14px;background:var(--surface-2);color:var(--text-2);font-weight:600">90%</div></div>
+              </div>
+              <div><label style="font-size:12px;color:var(--text-2);display:block;margin-bottom:6px">مصدر البيانات / مرفق</label><div style="border:1px dashed var(--border);border-radius:10px;padding:16px;font-size:12.5px;background:var(--surface-2);color:var(--text-3);text-align:center">اسحب ملفًا هنا أو اضغط للرفع</div></div>
+              <div style="display:flex;gap:10px;margin-top:6px"><button class="btn-p">إرسال للاعتماد</button><button class="btn-g">حفظ كمسودة</button></div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card" style="padding:20px">
+              <div style="font-weight:600;font-size:14px;margin-bottom:14px">الاحتساب التلقائي</div>
+              <div style="display:flex;flex-direction:column;gap:12px">
+                <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;color:var(--text-2)">نسبة الإنجاز</span><span style="font-size:20px;font-weight:700;color:{{ calcColor }}">{{ calcAchieve }}</span></div>
+                <div style="height:8px;background:var(--surface-2);border-radius:9px;overflow:hidden"><div style="height:100%;border-radius:9px;width:{{ calcAchieve }};background:{{ calcColor }}"></div></div>
+                <div style="display:flex;justify-content:space-between;padding-top:8px;border-top:1px solid var(--border)"><span style="font-size:13px;color:var(--text-2)">الانحراف</span><span style="font-size:15px;font-weight:600;color:{{ calcColor }}">{{ calcDev }}</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:var(--text-2)">مقارنة بالفترة السابقة</span><span style="font-size:15px;font-weight:600;color:var(--ok)">▲ +2%</span></div>
+                <div style="display:flex;justify-content:space-between"><span style="font-size:13px;color:var(--text-2)">الحالة</span><span style="font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:{{ calcBg }};color:{{ calcColor }}">{{ calcStatus }}</span></div>
+              </div>
+            </div>
+            <div class="card" style="padding:20px">
+              <div style="font-weight:600;font-size:14px;margin-bottom:12px">آخر الإدخالات</div>
+              <div style="font-size:12.5px;color:var(--text-2);line-height:2.1">يونيو 2026 — 72% — معتمد ✓<br>مايو 2026 — 70% — معتمد ✓<br>أبريل 2026 — 75% — معتمد ✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ MEETINGS ============ -->
+      <sc-if value="{{ isMeetings }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div><div style="font-size:22px;font-weight:700">اجتماعات مراجعة الأداء</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">جداول الأعمال والقرارات والتوصيات والمهام الناتجة</div></div>
+          <button class="btn-p">+ اجتماع جديد</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <sc-for list="{{ meetings }}" as="m" hint-placeholder-count="4">
+            <div class="card" style="padding:18px">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+                <div><div style="font-weight:600;font-size:14.5px">{{ m.title }}</div><div style="font-size:12px;color:var(--text-3);margin-top:3px">{{ m.date }} · {{ m.type }}</div></div>
+                <span style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:{{ m.bg }};color:{{ m.color }}">{{ m.status }}</span>
+              </div>
+              <div style="display:flex;gap:18px;margin:12px 0;padding:12px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+                <div><div style="font-size:18px;font-weight:700">{{ m.attendees }}</div><div style="font-size:10.5px;color:var(--text-3)">الحضور</div></div>
+                <div><div style="font-size:18px;font-weight:700">{{ m.decisions }}</div><div style="font-size:10.5px;color:var(--text-3)">قرارات</div></div>
+                <div><div style="font-size:18px;font-weight:700">{{ m.tasks }}</div><div style="font-size:10.5px;color:var(--text-3)">مهام ناتجة</div></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text-2)">تنفيذ التوصيات السابقة</span><span style="font-weight:600;color:{{ m.color }}">{{ m.followup }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ DECISION LOG ============ -->
+      <sc-if value="{{ isDecisions }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="margin-bottom:18px"><div style="font-size:22px;font-weight:700">سجل قرارات الإدارة العليا</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">توثيق القرارات وربطها بالمبادرات والمشاريع والمؤشرات</div></div>
+        <div class="card" style="overflow:hidden">
+          <div style="display:grid;grid-template-columns:2.6fr 1.4fr 1.2fr 1fr;gap:12px;padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2)"><div>القرار</div><div>المصدر</div><div>مرتبط بـ</div><div>الحالة</div></div>
+          <sc-for list="{{ decisions }}" as="d" hint-placeholder-count="5">
+            <div class="row" style="display:grid;grid-template-columns:2.6fr 1.4fr 1.2fr 1fr;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);font-size:12.8px;align-items:center">
+              <div><div style="font-weight:600;color:var(--text)">{{ d.text }}</div><div style="font-size:11px;color:var(--text-3)">{{ d.date }}</div></div>
+              <div style="color:var(--text-2)">{{ d.source }}</div>
+              <div><span style="font-size:11px;padding:3px 8px;border-radius:6px;background:var(--primary-soft);color:var(--primary-2)">{{ d.link }}</span></div>
+              <div><span style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:{{ d.bg }};color:{{ d.color }}">{{ d.status }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ MATURITY ============ -->
+      <sc-if value="{{ isMaturity }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="margin-bottom:18px"><div style="font-size:22px;font-weight:700">نضج إدارة الأداء</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">قياس مستوى نضج كل إدارة عبر خمسة أبعاد ومستويات</div></div>
+        <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:16px;margin-bottom:16px">
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:6px">أبعاد النضج المؤسسي</div>
+            <div id="ch-maturity" style="min-height:320px"></div>
+          </div>
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:14px">مستوى النضج حسب الإدارة</div>
+            <sc-for list="{{ maturityDepts }}" as="d" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--border)">
+                <span style="flex:1;font-size:13px;color:var(--text)">{{ d.name }}</span>
+                <span style="font-size:11px;font-weight:600;padding:4px 11px;border-radius:8px;background:{{ d.bg }};color:{{ d.color }}">{{ d.level }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+          <div class="card" style="padding:14px;text-align:center;border-top:3px solid var(--bad)"><div style="font-weight:700;font-size:15px">1</div><div style="font-size:11px;color:var(--text-2);margin-top:2px">مبدئي</div></div>
+          <div class="card" style="padding:14px;text-align:center;border-top:3px solid var(--warn)"><div style="font-weight:700;font-size:15px">2</div><div style="font-size:11px;color:var(--text-2);margin-top:2px">متكرّر</div></div>
+          <div class="card" style="padding:14px;text-align:center;border-top:3px solid #EAB308"><div style="font-weight:700;font-size:15px">3</div><div style="font-size:11px;color:var(--text-2);margin-top:2px">معرّف</div></div>
+          <div class="card" style="padding:14px;text-align:center;border-top:3px solid var(--primary)"><div style="font-weight:700;font-size:15px">4</div><div style="font-size:11px;color:var(--text-2);margin-top:2px">مُدار</div></div>
+          <div class="card" style="padding:14px;text-align:center;border-top:3px solid var(--ok)"><div style="font-weight:700;font-size:15px">5</div><div style="font-size:11px;color:var(--text-2);margin-top:2px">مُحسَّن</div></div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ NOTIFICATIONS ============ -->
+      <sc-if value="{{ isNotifications }}" hint-placeholder-val="{{ true }}">
+      <div class="screen" style="max-width:820px">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div><div style="font-size:22px;font-weight:700">مركز الإشعارات</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">تنبيهات موحّدة داخل النظام وعبر البريد الإلكتروني</div></div>
+          <button class="btn-g">تحديد الكل كمقروء</button>
+        </div>
+        <div class="card" style="overflow:hidden">
+          <sc-for list="{{ notifs }}" as="n" hint-placeholder-count="6">
+            <div class="row" style="display:flex;gap:14px;align-items:flex-start;padding:15px 18px;border-bottom:1px solid var(--border)">
+              <span style="width:36px;height:36px;flex-shrink:0;border-radius:10px;background:{{ n.bg }};display:flex;align-items:center;justify-content:center;color:{{ n.color }};font-weight:700;font-size:15px">{{ n.icon }}</span>
+              <div style="flex:1"><div style="font-size:13.5px;color:var(--text);font-weight:500">{{ n.title }}</div><div style="font-size:12px;color:var(--text-2);margin-top:2px">{{ n.desc }}</div></div>
+              <div style="display:flex;align-items:center;gap:10px;flex-shrink:0"><span style="font-size:11px;color:var(--text-3)">{{ n.time }}</span><sc-if value="{{ n.unread }}" hint-placeholder-val="{{ true }}"><span style="width:8px;height:8px;border-radius:50%;background:var(--primary)"></span></sc-if></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ USERS & PERMISSIONS ============ -->
+      <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div><div style="font-size:22px;font-weight:700">المستخدمون والصلاحيات</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">6 أدوار بصلاحيات دقيقة لكل شاشة وكل عملية (RBAC)</div></div>
+          <button class="btn-p">+ مستخدم</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px">
+          <div class="card" style="overflow:hidden">
+            <div style="display:grid;grid-template-columns:1.8fr 1.4fr 1fr;gap:12px;padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2)"><div>المستخدم</div><div>الدور</div><div>الحالة</div></div>
+            <sc-for list="{{ users }}" as="u" hint-placeholder-count="6">
+              <div class="row" style="display:grid;grid-template-columns:1.8fr 1.4fr 1fr;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);font-size:12.8px;align-items:center">
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:30px;height:30px;border-radius:50%;background:var(--primary-soft);color:var(--primary-2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">{{ u.ini }}</span><div><div style="font-weight:600">{{ u.name }}</div><div style="font-size:11px;color:var(--text-3)">{{ u.dept }}</div></div></div>
+                <div style="color:var(--text-2)">{{ u.role }}</div>
+                <div><span style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:{{ u.bg }};color:{{ u.color }}">{{ u.status }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+          <div class="card" style="padding:18px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:14px">مصفوفة الصلاحيات</div>
+            <div style="display:grid;grid-template-columns:1.6fr repeat(4,1fr);gap:8px;font-size:11px;align-items:center">
+              <div style="color:var(--text-3)"></div><div style="text-align:center;color:var(--text-3)">عرض</div><div style="text-align:center;color:var(--text-3)">إضافة</div><div style="text-align:center;color:var(--text-3)">تعديل</div><div style="text-align:center;color:var(--text-3)">اعتماد</div>
+              <sc-for list="{{ perms }}" as="p" hint-placeholder-count="5">
+                <div style="color:var(--text);font-weight:500">{{ p.role }}</div>
+                <div style="text-align:center">{{ p.view }}</div><div style="text-align:center">{{ p.add }}</div><div style="text-align:center">{{ p.edit }}</div><div style="text-align:center">{{ p.approve }}</div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ AUDIT LOG ============ -->
+      <sc-if value="{{ isAudit }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <div style="margin-bottom:18px"><div style="font-size:22px;font-weight:700">سجل العمليات</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">توثيق كامل: إضافة · تعديل · حذف · اعتماد · دخول · خروج</div></div>
+        <div class="card" style="overflow:hidden">
+          <div style="display:grid;grid-template-columns:1.4fr 1fr 2fr 1fr;gap:12px;padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2)"><div>المستخدم</div><div>العملية</div><div>التفاصيل</div><div>التاريخ والوقت</div></div>
+          <sc-for list="{{ auditRows }}" as="a" hint-placeholder-count="8">
+            <div class="row" style="display:grid;grid-template-columns:1.4fr 1fr 2fr 1fr;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);font-size:12.5px;align-items:center">
+              <div style="color:var(--text);font-weight:500">{{ a.user }}</div>
+              <div><span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:6px;background:{{ a.bg }};color:{{ a.color }}">{{ a.action }}</span></div>
+              <div style="color:var(--text-2)">{{ a.detail }}</div>
+              <div style="color:var(--text-3);font-family:'IBM Plex Mono',monospace;direction:ltr;font-size:11.5px">{{ a.time }}</div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ DATA INTEGRATION CENTER ============ -->
+      <sc-if value="{{ isIntegration }}" hint-placeholder-val="{{ true }}">      <div class="screen">
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:18px">
+          <div><div style="font-size:22px;font-weight:700">مركز تكامل البيانات</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">Data Integration Center · ربط النظام بالمصادر والأنظمة المؤسسية ومزامنة المؤشرات آليًا</div></div>
+          <div style="display:flex;gap:8px"><button onClick="{{ syncAll }}" class="btn-p" style="display:flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 019-9 9 9 0 018 5M21 12a9 9 0 01-9 9 9 9 0 01-8-5M21 4v4h-4M3 20v-4h4"/></svg>مزامنة الكل</button><button onClick="{{ toggleConn }}" class="btn-g">+ مصدر بيانات</button></div>
+        </div>
+
+        <!-- KPI cards -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:16px">
+          <div class="card" style="padding:18px"><div style="color:var(--text-2);font-size:12.5px;margin-bottom:8px">مصادر متصلة</div><div style="font-size:26px;font-weight:700;color:var(--ok)">{{ connActive }}</div></div>
+          <div class="card" style="padding:18px"><div style="color:var(--text-2);font-size:12.5px;margin-bottom:8px">إجمالي المصادر</div><div style="font-size:26px;font-weight:700">{{ connTotal }}</div></div>
+          <div class="card" style="padding:18px"><div style="color:var(--text-2);font-size:12.5px;margin-bottom:8px">سجلات مُزامنة اليوم</div><div style="font-size:26px;font-weight:700">{{ connRecords }}</div></div>
+          <div class="card" style="padding:18px"><div style="color:var(--text-2);font-size:12.5px;margin-bottom:8px">تحتاج انتباهًا</div><div style="font-size:26px;font-weight:700;color:var(--warn)">{{ connIssues }}</div></div>
+        </div>
+
+        <!-- add connector form -->
+        <sc-if value="{{ connOpen }}" hint-placeholder-val="{{ false }}">
+        <div class="card" style="padding:18px;margin-bottom:16px;border-color:var(--primary)">
+          <div style="font-weight:600;font-size:14px;margin-bottom:14px">ربط مصدر بيانات جديد</div>
+          <div style="display:grid;grid-template-columns:2fr 1.4fr 1.4fr auto;gap:12px;align-items:end">
+            <div><label style="font-size:11px;color:var(--text-2);display:block;margin-bottom:5px">اسم المصدر</label><input value="{{ connDraft.name }}" data-f="name" onInput="{{ updConn }}" placeholder="مثال: نظام الموارد البشرية" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text);outline:none"></div>
+            <div><label style="font-size:11px;color:var(--text-2);display:block;margin-bottom:5px">النوع</label><select value="{{ connDraft.type }}" data-f="type" onChange="{{ updConn }}" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text)"><option>REST API</option><option>SQL Server</option><option>Excel / CSV</option><option>Power BI</option><option>Microsoft 365</option><option>ERP</option></select></div>
+            <div><label style="font-size:11px;color:var(--text-2);display:block;margin-bottom:5px">التكرار</label><select value="{{ connDraft.freq }}" data-f="freq" onChange="{{ updConn }}" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:9px 11px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text)"><option>فوري (Real-time)</option><option>كل ساعة</option><option>يومي</option><option>أسبوعي</option><option>يدوي</option></select></div>
+            <button onClick="{{ saveConn }}" class="btn-p" style="height:38px">ربط</button>
+          </div>
+        </div>
+        </sc-if>
+
+        <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:16px">
+          <!-- connectors table -->
+          <div class="card" style="overflow:hidden">
+            <div style="display:grid;grid-template-columns:1.7fr 1.1fr 1fr 0.9fr;gap:10px;padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2)"><div>المصدر</div><div>النوع</div><div>آخر مزامنة</div><div>الحالة</div></div>
+            <sc-for list="{{ connectors }}" as="c" hint-placeholder-count="6">
+              <div class="row" style="display:grid;grid-template-columns:1.7fr 1.1fr 1fr 0.9fr;gap:10px;padding:13px 18px;border-bottom:1px solid var(--border);font-size:12.5px;align-items:center">
+                <div style="display:flex;align-items:center;gap:10px"><span style="width:30px;height:30px;flex-shrink:0;border-radius:8px;background:{{ c.iconBg }};display:flex;align-items:center;justify-content:center;color:{{ c.iconColor }};font-weight:700;font-size:11px;font-family:'IBM Plex Mono',monospace">{{ c.abbr }}</span><div><div style="font-weight:600">{{ c.name }}</div><div style="font-size:10.5px;color:var(--text-3)">{{ c.freq }}</div></div></div>
+                <div style="color:var(--text-2)">{{ c.type }}</div>
+                <div style="color:var(--text-3);font-size:11.5px">{{ c.lastSync }}</div>
+                <div><span style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:{{ c.bg }};color:{{ c.color }}">{{ c.status }}</span></div>
+              </div>
+            </sc-for>
+          </div>
+          <!-- available integrations + pipeline -->
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div class="card" style="padding:18px">
+              <div style="font-weight:600;font-size:14px;margin-bottom:12px">تكاملات جاهزة للربط</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <sc-for list="{{ available }}" as="a" hint-placeholder-count="6">
+                  <div style="display:flex;align-items:center;gap:9px;border:1px solid var(--border);border-radius:10px;padding:10px 12px"><span style="width:26px;height:26px;border-radius:7px;background:{{ a.bg }};display:flex;align-items:center;justify-content:center;color:{{ a.color }};font-weight:700;font-size:10px;font-family:'IBM Plex Mono',monospace">{{ a.abbr }}</span><span style="font-size:12px;color:var(--text)">{{ a.name }}</span></div>
+                </sc-for>
+              </div>
+            </div>
+            <div class="card" style="padding:18px">
+              <div style="font-weight:600;font-size:14px;margin-bottom:6px">تدفّق المزامنة اليوم</div>
+              <div id="ch-integration" style="min-height:200px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- sync log -->
+        <div class="card" style="overflow:hidden;margin-top:16px">
+          <div style="padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:13px;font-weight:600;color:var(--text)">سجل المزامنة</div>
+          <sc-for list="{{ syncLog }}" as="l" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);font-size:12.5px">
+              <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;background:{{ l.color }}"></span>
+              <span style="flex:1;color:var(--text)">{{ l.msg }}</span>
+              <span style="color:var(--text-3);font-family:'IBM Plex Mono',monospace;direction:ltr;font-size:11px">{{ l.time }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ SYSTEM SETTINGS ============ -->
+      <sc-if value="{{ isSettings }}" hint-placeholder-val="{{ true }}">
+      <div class="screen" style="max-width:900px">
+        <div style="margin-bottom:18px"><div style="font-size:22px;font-weight:700">إعدادات النظام</div><div style="color:var(--text-2);font-size:13.5px;margin-top:3px">التفضيلات العامة والمظهر والهوية المؤسسية</div></div>
+
+        <div class="card" style="padding:22px;margin-bottom:16px">
+          <div style="font-weight:600;font-size:14px;margin-bottom:16px">المظهر واللغة</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+            <div><div style="font-size:13.5px;font-weight:500">وضع العرض</div><div style="font-size:12px;color:var(--text-2)">التبديل بين الوضع الفاتح والداكن</div></div>
+            <button onClick="{{ toggleTheme }}" class="btn-g" style="display:flex;align-items:center;gap:8px">{{ themeIcon }} {{ themeLabel }}</button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)">
+            <div><div style="font-size:13.5px;font-weight:500">اللغة</div><div style="font-size:12px;color:var(--text-2)">لغة الواجهة واتجاهها</div></div>
+            <span class="btn-g" style="cursor:default">العربية · RTL</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0">
+            <div><div style="font-size:13.5px;font-weight:500">السنة المالية الافتراضية</div><div style="font-size:12px;color:var(--text-2)">تُستخدم في الأقسام والتقارير</div></div>
+            <span class="btn-g" style="cursor:default">{{ year }}</span>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="card" style="padding:22px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:16px">الهوية المؤسسية</div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+              <div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-family:'IBM Plex Mono',monospace">KPI</div>
+              <div><div style="font-size:13.5px;font-weight:600">منصة مؤشرات الأداء المؤسسي</div><div style="font-size:12px;color:var(--text-2)">Enterprise EPM</div></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid var(--border);font-size:12.8px"><span style="color:var(--text-2)">المالك</span><span style="font-weight:500">NUSAIBA AL SUMAIT</span></div>
+            <div style="display:flex;justify-content:space-between;padding:9px 0;font-size:12.8px"><span style="color:var(--text-2)">إصدار النظام</span><span style="font-weight:500">v2.0</span></div>
+          </div>
+          <div class="card" style="padding:22px">
+            <div style="font-weight:600;font-size:14px;margin-bottom:16px">الإشعارات والتكامل</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">تنبيهات البريد الإلكتروني</span><span style="width:38px;height:22px;border-radius:999px;background:var(--ok);position:relative"><span style="position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff"></span></span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px">تنبيهات المؤشرات الحرجة</span><span style="width:38px;height:22px;border-radius:999px;background:var(--ok);position:relative"><span style="position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff"></span></span></div>
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;padding-left:10px"><div style="font-size:13px">تذكير التعبئة الشهرية</div><div style="font-size:11px;color:var(--text-2);margin-top:2px">داخل النظام + بريد إلكتروني — أيام 1 إلى 5 من كل شهر</div></div><span style="width:38px;height:22px;border-radius:999px;background:var(--ok);position:relative;flex-shrink:0"><span style="position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff"></span></span></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0"><span style="font-size:13px">مزامنة مركز تكامل البيانات</span><span onClick="{{ go }}" data-screen="integration" style="font-size:12px;color:var(--primary-2);cursor:pointer">فتح ↗</span></div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- ============ MARKETING DEPARTMENT ============ -->
+      <sc-if value="{{ isMarketing }}" hint-placeholder-val="{{ true }}">
+      <div class="screen">
+        <!-- department hero -->
+        <div class="card" style="padding:22px;margin-bottom:16px;background:linear-gradient(135deg,var(--primary-soft),var(--surface));border-color:var(--primary)">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:48px;height:48px;border-radius:13px;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 11l18-7-7 18-2.5-8.5z"/></svg></div>
+              <div><div style="font-size:11px;color:var(--primary-2);font-weight:600;margin-bottom:2px">{{ deptSection }}</div><div style="font-size:22px;font-weight:700">{{ deptTitle }}</div><div style="color:var(--text-2);font-size:13px;margin-top:2px">{{ mktYearTitle }}</div></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:4px;border:1px solid var(--border);border-radius:9px;padding:2px 2px 2px 4px;background:var(--surface)">
+                <select onChange="{{ setYear }}" value="{{ year }}" style="cursor:pointer;border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--text);outline:none;padding:5px 4px"><sc-for list="{{ years }}" as="y" hint-placeholder-count="4"><option value="{{ y }}">{{ y }}</option></sc-for></select>
+                <button onClick="{{ addYear }}" title="إضافة سنة" style="width:24px;height:24px;border:none;border-radius:6px;background:var(--surface-2);color:var(--primary-2);cursor:pointer;font-size:14px;line-height:1;font-family:inherit">＋</button>
+                <button onClick="{{ delYear }}" title="حذف السنة الحالية" style="width:24px;height:24px;border:none;border-radius:6px;background:var(--surface-2);color:var(--bad);cursor:pointer;font-size:15px;line-height:1;font-family:inherit">－</button>
+              </div>
+              <select onChange="{{ setPeriod }}" value="{{ period }}" class="btn-g" style="cursor:pointer"><sc-for list="{{ periods }}" as="p" hint-placeholder-count="12"><option value="{{ p }}">{{ p }}</option></sc-for></select>
+              <button onClick="{{ toggleAdd }}" class="btn-p" style="display:flex;align-items:center;gap:5px"><span style="font-size:15px;line-height:1">＋</span>مؤشر</button>
+              <button onClick="{{ toggleEdit }}" class="btn-g" style="border-color:var(--primary);color:var(--primary-2)">{{ editLabel }}</button>
+              <label class="btn-g" style="cursor:pointer;display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3M7 8l5-5 5 5M5 21h14"/></svg>رفع Excel<input type="file" accept=".xlsx,.xls,.csv" onChange="{{ onUpload }}" style="display:none"></label>
+              <div style="position:relative"><button onClick="{{ toggleExport }}" class="btn-p" style="display:flex;align-items:center;gap:6px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>تصدير ▾</button>
+              <sc-if value="{{ exportOpen }}" hint-placeholder-val="{{ false }}">
+                <div style="position:absolute;top:46px;left:0;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:6px;width:230px;z-index:40">
+                  <div style="font-size:10.5px;color:var(--text-3);font-weight:600;padding:6px 10px 4px">Excel</div>
+                  <div onClick="{{ exportRun }}" data-fmt="excel" data-scope="current" class="row" style="padding:8px 10px;border-radius:8px;font-size:12.5px;cursor:pointer;color:var(--text)">الشهر المحدد ({{ periodLabel }})</div>
+                  <div onClick="{{ exportRun }}" data-fmt="excel" data-scope="all" class="row" style="padding:8px 10px;border-radius:8px;font-size:12.5px;cursor:pointer;color:var(--text)">كل شهور {{ year }}</div>
+                  <div style="font-size:10.5px;color:var(--text-3);font-weight:600;padding:8px 10px 4px;border-top:1px solid var(--border);margin-top:4px">PDF</div>
+                  <div onClick="{{ exportRun }}" data-fmt="pdf" data-scope="current" class="row" style="padding:8px 10px;border-radius:8px;font-size:12.5px;cursor:pointer;color:var(--text)">الشهر المحدد ({{ periodLabel }})</div>
+                  <div onClick="{{ exportRun }}" data-fmt="pdf" data-scope="all" class="row" style="padding:8px 10px;border-radius:8px;font-size:12.5px;cursor:pointer;color:var(--text)">كل شهور {{ year }}</div>
+                </div>
+              </sc-if>
+              </div></div>
+          </div>
+        </div>
+
+        <!-- add KPI form -->
+        <sc-if value="{{ addOpen }}" hint-placeholder-val="{{ false }}">
+        <div class="card" style="padding:18px;margin-bottom:16px;border-color:var(--primary)">
+          <div style="font-weight:600;font-size:14px;margin-bottom:14px">إضافة مؤشر جديد</div>
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:12px;align-items:end">
+            <div><label style="font-size:11px;color:var(--text-2);display:block;margin-bottom:5px">اسم المؤشر</label><input value="{{ draft.name }}" data-f="name" onInput="{{ updDraft }}" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text);outline:none"></div>
+            <div><label style="font-size:11px;color:var(--text-2);display:block;margin-bottom:5px">التكرار</label><select value="{{ draft.freq }}" data-f="freq" onChange="{{ updDraft }}" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text)"><option>شهري</option><option>ربع سنوي</option><option>نصف سنوي</option><option>سنوي</option></select></div>
+            <div><label style="font-size:11px;color:var(--text-2);display:block;margin-bottom:5px">الوزن %</label><input value="{{ draft.weight }}" data-f="weight" onInput="{{ updDraft }}" type="number" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text);outline:none"></div>
+            <div><label style="font-size:11px;color:var(--text-2);display:block;margin-bottom:5px">المستهدف</label><input value="{{ draft.target }}" data-f="target" onInput="{{ updDraft }}" type="number" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text);outline:none"></div>
+            <div><label style="font-size:11px;color:var(--text-2);display:block;margin-bottom:5px">الوحدة</label><select value="{{ draft.unit }}" data-f="unit" onChange="{{ updDraft }}" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text)"><option value="%">%</option><option value="">عدد</option><option value="money">مبلغ</option></select></div>
+            <button onClick="{{ saveKpi }}" class="btn-p" style="height:37px">حفظ</button>
+          </div>
+          <div style="margin-top:12px"><input value="{{ draft.desc }}" data-f="desc" onInput="{{ updDraft }}" placeholder="وصف المؤشر / طريقة الاحتساب (اختياري)" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text);outline:none"></div>
+        </div>
+        </sc-if>
+
+        <!-- stat cards -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:16px">
+          <div class="card" style="padding:18px"><div style="color:var(--text-2);font-size:12.5px;margin-bottom:8px">{{ mktCountLabel }}</div><div style="font-size:26px;font-weight:700">{{ mktCount }}</div></div>
+          <div class="card" style="padding:18px;background:linear-gradient(135deg,var(--primary-soft),var(--surface))"><div style="color:var(--text-2);font-size:12.5px;margin-bottom:8px">نسبة الإنجاز</div><div style="font-size:26px;font-weight:700;color:var(--primary-2)">{{ mktSimpleAvg }}</div></div>
+          <div class="card" style="padding:18px"><div style="color:var(--text-2);font-size:12.5px;margin-bottom:8px">متوسط الإنجاز (موزون)</div><div style="font-size:26px;font-weight:700;color:var(--ok)">{{ mktAvg }}</div></div>
+          <div class="card" style="padding:18px"><div style="color:var(--text-2);font-size:12.5px;margin-bottom:8px">إجمالي الوزن</div><div style="font-size:26px;font-weight:700">{{ mktWeight }}</div></div>
+          <div class="card" style="padding:18px"><div style="color:var(--text-2);font-size:12.5px;margin-bottom:8px">مؤشرات دون المستهدف</div><div style="font-size:26px;font-weight:700;color:var(--warn)">{{ mktBelow }}</div></div>
+        </div>
+
+        <div style="margin-bottom:16px">
+          <div class="card" style="padding:18px"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><div style="font-weight:600;font-size:14px">نسبة الإنجاز لكل مؤشر</div><sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}"><span onClick="{{ clearSel }}" style="font-size:11px;color:var(--primary-2);cursor:pointer">✕ إلغاء التحديد</span></sc-if></div><div id="ch-mkt" style="min-height:440px"></div></div>
+        </div>
+        <sc-if value="{{ hasSelection }}" hint-placeholder-val="{{ false }}">
+          <div style="margin:-4px 0 16px;font-size:12px;color:var(--primary-2);display:flex;align-items:center;gap:6px">◆ المحدَّد: <strong>{{ selName }}</strong> — تُبرز الرسوم البيانية هذا المؤشر. اضغط عليه مجددًا لإلغاء التحديد.</div>
+        </sc-if>
+
+        <!-- toolbar: search / filter / sort -->
+        <div class="card" style="padding:12px 16px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <div style="display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:7px 11px;flex:1;min-width:180px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+            <input value="{{ search }}" onInput="{{ setSearch }}" placeholder="بحث عن مؤشر أو كود…" style="flex:1;border:none;background:transparent;outline:none;font-family:inherit;font-size:12.5px;color:var(--text)">
+          </div>
+          <select value="{{ fStatus }}" data-f="fStatus" onChange="{{ setFilter }}" class="btn-g" style="cursor:pointer"><option value="all">كل الحالات</option><option value="ممتاز">ممتاز</option><option value="جيد">جيد</option><option value="متوسط">متوسط</option><option value="حرج">حرج</option></select>
+          <select value="{{ fFreq }}" data-f="fFreq" onChange="{{ setFilter }}" class="btn-g" style="cursor:pointer"><option value="all">كل التكرارات</option><option value="شهري">شهري</option><option value="ربع سنوي">ربع سنوي</option></select>
+          <select value="{{ sortBy }}" data-f="sortBy" onChange="{{ setFilter }}" class="btn-g" style="cursor:pointer"><option value="default">الترتيب الافتراضي</option><option value="pctDesc">الإنجاز: الأعلى أولًا</option><option value="pctAsc">الإنجاز: الأدنى أولًا</option><option value="weightDesc">الوزن: الأعلى أولًا</option><option value="name">الاسم أبجديًا</option></select>
+          <span style="font-size:12px;color:var(--text-3)">عرض {{ mktShown }} من {{ mktTotal }}</span>
+          <button onClick="{{ toggleTrash }}" class="btn-g" style="display:flex;align-items:center;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>سلة المحذوفات ({{ deletedCount }})</button>
+        </div>
+
+        <!-- trash / restore panel -->
+        <sc-if value="{{ trashOpen }}" hint-placeholder-val="{{ false }}">
+        <div class="card" style="padding:18px;margin-bottom:16px;border-color:var(--bad)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="font-weight:600;font-size:14px">سلة المحذوفات — {{ deletedCount }} مؤشر</div>
+            <span onClick="{{ toggleTrash }}" style="font-size:12px;color:var(--text-3);cursor:pointer">إغلاق ✕</span>
+          </div>
+          <sc-if value="{{ hasDeleted }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ deletedKpis }}" as="d" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
+                <span style="width:11px;height:11px;border-radius:3px;flex-shrink:0;background:{{ d.dot }}"></span>
+                <div style="flex:1"><div style="font-weight:600;font-size:13px">{{ d.name }}</div><div style="font-size:11px;color:var(--text-3)">{{ d.desc }} · <span style="font-family:'IBM Plex Mono',monospace;direction:ltr">#{{ d.id }}</span></div></div>
+                <button onClick="{{ restoreKpi }}" data-id="{{ d.id }}" class="btn-g" style="display:flex;align-items:center;gap:6px;border-color:var(--ok);color:var(--ok)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9 9 0 00-7 3.3M3 4v4h4"/></svg>استرجاع</button>
+              </div>
+            </sc-for>
+          </sc-if>
+          <sc-if value="{{ noDeleted }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:13px;color:var(--text-3);text-align:center;padding:10px">لا توجد مؤشرات محذوفة.</div>
+          </sc-if>
+        </div>
+        </sc-if>
+
+        <!-- KPI table -->
+        <div class="card" style="overflow-x:auto">
+          <div style="display:grid;grid-template-columns:2.6fr .9fr .7fr 1fr 1fr .9fr 1fr;gap:12px;padding:13px 18px;background:var(--surface-2);border-bottom:1px solid var(--border);font-size:12px;font-weight:600;color:var(--text-2);min-width:820px">
+            <div>المؤشر</div><div>التكرار</div><div>الوزن</div><div>المستهدف</div><div>الإنجاز الفعلي</div><div>نسبة الإنجاز</div><div>الحالة</div>
+          </div>
+          <sc-for list="{{ mktKpis }}" as="k" hint-placeholder-count="6">
+            <div class="row" data-kpi-row="{{ k.id }}" onClick="{{ selectRow }}" style="display:grid;grid-template-columns:2.6fr .9fr .7fr 1fr 1fr .9fr 1fr;gap:12px;padding:14px 18px;border-bottom:1px solid var(--border);border-right:3px solid transparent;font-size:12.8px;align-items:center;min-width:820px;cursor:pointer">
+              <div style="display:flex;align-items:flex-start;gap:9px">
+                <span style="width:11px;height:11px;border-radius:3px;flex-shrink:0;margin-top:3px;background:{{ k.dot }}"></span>
+                <div style="flex:1;min-width:0">
+                  <sc-if value="{{ editMode }}" hint-placeholder-val="{{ false }}"><input value="{{ k.name }}" data-id="{{ k.id }}" data-field="name" onInput="{{ editMeta }}" style="width:100%;border:1px solid var(--primary);border-radius:8px;padding:6px 8px;font-size:12.5px;font-weight:600;font-family:inherit;background:var(--surface);color:var(--text);outline:none"></sc-if>
+                  <sc-if value="{{ notEdit }}" hint-placeholder-val="{{ true }}"><div style="font-weight:600;color:var(--text)">{{ k.name }}</div></sc-if>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px">{{ k.desc }} · <span style="font-family:'IBM Plex Mono',monospace;direction:ltr">#{{ k.id }}</span></div>
+                </div>
+              </div>
+              <div>
+                <sc-if value="{{ editMode }}" hint-placeholder-val="{{ false }}"><select value="{{ k.freq }}" data-id="{{ k.id }}" data-field="freq" onChange="{{ editMeta }}" style="width:100%;border:1px solid var(--primary);border-radius:8px;padding:6px 6px;font-size:11.5px;font-family:inherit;background:var(--surface);color:var(--text);outline:none"><option value="">—</option><option>شهري</option><option>ربع سنوي</option><option>نصف سنوي</option><option>سنوي</option><option>أسبوعي</option></select></sc-if>
+                <sc-if value="{{ notEdit }}" hint-placeholder-val="{{ true }}"><span style="color:var(--text-2)">{{ k.freq }}</span></sc-if>
+              </div>
+              <div>
+                <sc-if value="{{ editMode }}" hint-placeholder-val="{{ false }}"><input value="{{ k.weight }}" data-id="{{ k.id }}" data-field="weight" onInput="{{ editMeta }}" style="width:100%;border:1px solid var(--primary);border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit;background:var(--surface);color:var(--text);outline:none"></sc-if>
+                <sc-if value="{{ notEdit }}" hint-placeholder-val="{{ true }}"><span style="color:var(--text-2)">{{ k.weight }}</span></sc-if>
+              </div>
+              <div>
+                <sc-if value="{{ editMode }}" hint-placeholder-val="{{ false }}"><input type="number" value="{{ k.target }}" data-id="{{ k.id }}" data-field="target" onInput="{{ editMeta }}" style="width:100%;border:1px solid var(--primary);border-radius:8px;padding:6px 8px;font-size:12px;font-family:inherit;background:var(--surface);color:var(--text);outline:none"></sc-if>
+                <sc-if value="{{ notEdit }}" hint-placeholder-val="{{ true }}"><span style="font-weight:600;color:var(--text)">{{ k.targetFmt }}</span></sc-if>
+              </div>
+              <div>
+                <sc-if value="{{ entryEditable }}" hint-placeholder-val="{{ true }}"><input type="number" data-id="{{ k.id }}" value="{{ k.curRaw }}" onInput="{{ k.editCurrent }}" onClick="{{ stop }}" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:7px 9px;font-size:12.5px;font-family:inherit;background:var(--surface);color:var(--text);outline:none" style-focus="border-color:var(--primary)"></sc-if>
+                <sc-if value="{{ allMonths }}" hint-placeholder-val="{{ false }}"><div style="padding:7px 9px;font-size:12.5px;font-weight:600;color:var(--text-2);background:var(--surface-2);border-radius:8px;text-align:center" title="متوسط كل الأشهر">{{ k.curRaw }}</div></sc-if>
+              </div>
+              <div style="font-weight:700;color:{{ k.color }}">{{ k.pct }}</div>
+              <div style="display:flex;align-items:center;gap:8px;justify-content:space-between">
+                <span style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px;background:{{ k.bg }};color:{{ k.color }}">{{ k.status }}</span>
+                <sc-if value="{{ editMode }}" hint-placeholder-val="{{ false }}"><button onClick="{{ delKpi }}" data-id="{{ k.id }}" title="حذف المؤشر" style="width:26px;height:26px;flex-shrink:0;border:1px solid var(--border);border-radius:7px;background:var(--surface);color:var(--bad);cursor:pointer;display:flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button></sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+    </main>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:940}}">
+class Component extends DCLogic {
+  state = { screen: 'prmedia', theme: 'light', view: 'list', tab: 'history', entryActual: '73',
+    period: 'يوليو', year: '2026', years: ['2024','2025','2026','2027'], current: {}, exportOpen: false,
+    editMode: false, meta: {}, fStatus: 'all', fFreq: 'all', sortBy: 'default', search: '',
+    selectedId: null, customKpis: [], addOpen: false, deleted: [], trashOpen: false,
+    draft: { name:'', desc:'', freq:'شهري', weight:'', target:'', unit:'%' },
+    connOpen: false, connDraft: { name:'', type:'REST API', freq:'يومي' }, extraConns: [], bellOpen: false };
+  charts = {};
+  MONTHS = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  YEARS = ['2024','2025','2026','2027'];
+  MKT = [
+    {id:'2203', name:'نمو عدد المتبرعين', desc:'نسبة نمو المتبرعين عن العام السابق', freq:'شهري', weight:'8%', target:3.63, unit:'%'},
+    {id:'2202', name:'قنوات الإتصال الفعّالة', desc:'عدد قنوات التواصل مع المتبرعين', freq:'ربع سنوي', weight:'5%', target:10, unit:''},
+    {id:'257', name:'انطباع المتبرعين عن الخدمات', desc:'نتيجة استبيان الرضا في الموقع', freq:'ربع سنوي', weight:'6%', target:99, unit:''},
+    {id:'1479', name:'نسبة التفاعل مع الإستبيان', desc:'المشاركون / إجمالي حركات التبرع', freq:'ربع سنوي', weight:'2%', target:6, unit:''},
+    {id:'3044', name:'نمو تبرعات أصل الأوقاف', desc:'رأس مال الوقف المستلم من الواقفين', freq:'شهري', weight:'7%', target:9317000, unit:'money'},
+    {id:'1054', name:'وصول التقارير في موعدها', desc:'خلال ثلاثة أيام عمل للمتبرع', freq:'شهري', weight:'7%', target:98, unit:'%'}
+  ];
+  DEFAULTS = { '2203':3.10, '2202':8, '257':92, '1479':4, '3044':7830000, '1054':95 };
+  // ===== E-MARKETING department (التسويق الإلكتروني) =====
+  EMKT = [
+    {id:'257', name:'انطباع المتبرعين عن الخدمات المقدمة في الموقع', desc:'استبيان المتبرعين في الموقع', formula:'نتيجة استبيان مستوى الرضا عن الخدمة للمتبرعين عن طريق الموقع', freq:'ربع سنوي', weight:'6%', target:99, unit:''},
+    {id:'1479', name:'نسبة التفاعل مع الإستبيان', desc:'عدد المتبرعين المشاركين في الإستبيان', formula:'عدد مرات التفاعل مع الاستبيان في الموقع / إجمالي عدد حركات التبرع في الموقع', freq:'ربع سنوي', weight:'2%', target:6, unit:''},
+    {id:'2203', name:'نمو عدد المتبرعين', desc:'إجمالي عدد المتبرعين', formula:'نسبة نمو المتبرعين عن العام السابق', freq:'شهري', weight:'8%', target:3.63, unit:'%'},
+    {id:'255', name:'ROI للإعلانات الإلكترونية المدفوعة', desc:'قياس العائد من الإستثمار في الحملات الإلكترونية', formula:'(Revenue - Cost) / Cost', freq:'شهري', weight:'8%', target:11000, unit:''},
+    {id:'256', name:'العمليات الناجحة KNET', desc:'نسبة عمليات التبرع الناجحة من مجموع عمليات التبرع عن طريق KNET', formula:'١- (العمليات الفاشلة / مجموع عمليات الشهر)', freq:'شهري', weight:'8%', target:94, unit:'%'}
+  ];
+  EMKT_DEFAULTS = { '257':95, '1479':5, '2203':3.1, '255':9500, '256':91 };
+  // ===== PR & MEDIA department (العلاقات العامة والإعلام) =====
+  PR = [
+    {id:'2200', name:'انطباع المتبرعين عن الخدمات في مواقع التواصل', desc:'استبيان المتبرعين في الواتس اب', formula:'نتيجة استبيان مستوى الرضا من الخدمة للمتبرعين عن الواتس اب', freq:'ربع سنوي', weight:'3%', target:94, unit:'%'},
+    {id:'258', name:'نمو المتابعين - انستغرام', desc:'انستغرام', formula:'نسبة النمو في عدد المتابعين', freq:'شهري', weight:'5%', target:209652, unit:''},
+    {id:'2196', name:'نسبة التفاعل على إنستغرام', desc:'إنستغرام', formula:'عدد Clicks على روابط التبرع', freq:'شهري', weight:'3%', target:42000, unit:''},
+    {id:'259', name:'نمو المتابعين - تويتر', desc:'تويتر', formula:'نسبة النمو في عدد المتابعين', freq:'شهري', weight:'5%', target:86003, unit:''},
+    {id:'2197', name:'نسبة التفاعل على تويتر', desc:'تويتر', formula:'عدد Clicks على روابط التبرع', freq:'شهري', weight:'3%', target:15000, unit:''},
+    {id:'2198', name:'نسبة التفاعل على خدمة شركاء العون', desc:'خدمة شركاء العون', formula:'عدد Clicks على روابط التبرع', freq:'شهري', weight:'3%', target:60537, unit:''},
+    {id:'2199', name:'هوية موحدة في جميع قنوات الإتصال', desc:'هوية موحدة في جميع قنوات الإتصال', formula:'هوية موحدة فى جميع قنوات الإتصال', freq:'ربع سنوي', weight:'3%', target:100, unit:'%'},
+    {id:'1051', name:'أنشطة تعزيز الهوية', desc:'تشمل المحاضرات والظهور الإعلامي', formula:'عدد الأيام التي يكون فيها أنشطة لتعزيز الهوية', freq:'شهري', weight:'10%', target:110, unit:''},
+    {id:'2567', name:'برامج التفاعل مع الأسر والشباب والأطفال', desc:'عدد البرامج خلال العام', formula:'عدد برامج التفاعل التي تتم خلال العام', freq:'شهري', weight:'3%', target:35, unit:''},
+    {id:'2566', name:'عدد زيارات المدارس', desc:'عدد الزيارات خلال فترة الدراسة', formula:'عدد الزيارات التي تتم من المدارس خلال فترة الدراسة', freq:'شهري', weight:'3%', target:31, unit:''},
+    {id:'1468', name:'الفعاليات الداخلية للحالة المعنوية', desc:'فعاليات داخلية ترفع الحالة المعنوية للموظف', formula:'عدد الفعاليات', freq:'شهري', weight:'10%', target:41, unit:''},
+    {id:'1469', name:'الفعاليات الداخلية لبيئة العمل', desc:'فعاليات داخلية لتهيئة بيئة عمل مناسبة', formula:'عدد الفعاليات', freq:'شهري', weight:'10%', target:44, unit:''},
+    {id:'1470', name:'إنجاز مهام المصممين في الموعد', desc:'نسبة إنجاز مهام المصممين في الموعد', formula:'التصاميم المنجزة في موعدها / إجمالي التصاميم المطلوبة', freq:'شهري', weight:'4%', target:99.11, unit:'%'}
+  ];
+  PR_DEFAULTS = { '2200':90, '258':195000, '2196':38000, '259':80000, '2197':13500, '2198':55000, '2199':95, '1051':98, '2567':30, '2566':28, '1468':38, '1469':40, '1470':97 };
+  // ===== VOLUNTEERS department (شئون المتطوعين) =====
+  VOL = [
+    {id:'2639', name:'المتطوعين الفاعلين', desc:'من لديه نشاط تطوعي خلال العام في الكويت أو الميدان', formula:'عدد المتطوعين الفاعلين', freq:'شهري', weight:'10%', target:251, unit:''},
+    {id:'2287', name:'عدد ساعات التطوع', desc:'إجمالي الساعات التطوعية في الكويت والميدان', formula:'إجمالي عدد الساعات التطوعية في الكويت والميدان', freq:'شهري', weight:'10%', target:17545, unit:''},
+    {id:'2082', name:'المبلغ الموفّر من الاستفادة من المتطوعين', desc:'يُقيّم وفق معيار احتساب التكاليف المعتمد', formula:'إجمالي وافر التكلفة التشغيلية والإدارية من التطوع', freq:'سنوي', weight:'10%', target:69878, unit:'money'},
+    {id:'2083', name:'عدد المشاركات في المنتديات التطوعية', desc:'يُقيّم من خلال تقارير مسؤول القسم', formula:'عدد المشاركات الفعلي من خلال تقارير مقدمة', freq:'سنوي', weight:'7.5%', target:5, unit:''},
+    {id:'2084', name:'عدد الشراكات مع الفرق التطوعية', desc:'عمل شراكات مع فرق تطوعية في الكويت أو الميدان', formula:'عدد الشراكات الموقّعة مع الفرق التطوعية', freq:'سنوي', weight:'7.5%', target:5, unit:''},
+    {id:'2288', name:'نسبة الإبقاء على المتطوعين', desc:'نسبة المتطوعين المستمرين (Volunteers Retention)', formula:'نسبة المتطوعين المستمرين', freq:'أسبوعي', weight:'10%', target:100, unit:'%'},
+    {id:'2085', name:'انطباع المتطوعين عن الخدمات المقدمة', desc:'مستوى الخدمة المقدمة للمتطوعين والأقسام', formula:'استبيان يُرسل للمتطوع والقسم بعد كل عملية تعيين', freq:'شهري', weight:'5%', target:100, unit:'%'},
+    {id:'2087', name:'تكريم المتطوعين', desc:'عمل تكريم مستمر للمتطوعين', formula:'عدد المتطوعين الفاعلين / عدد عمليات التكريم لكل فرد', freq:'شهري', weight:'10%', target:100, unit:'%'}
+  ];
+  VOL_DEFAULTS = { '2639':230, '2287':15000, '2082':60000, '2083':4, '2084':5, '2288':92, '2085':95, '2087':88 };
+  SEED_MONTH = 'يوليو'; SEED_YEAR = '2026';
+  get PERIODS(){ return this.MONTHS; }  // month names only; year is a separate selector
+
+  // ===== department resolver (derived from current screen) =====
+  _dept(){ const s=this.state.screen; return s==='emarketing'?'emkt':(s==='prmedia'?'pr':(s==='volunteers'?'vol':'mkt')); }
+  _deptList(){ const d=this._dept(); return d==='emkt'?this.EMKT:(d==='pr'?this.PR:(d==='vol'?this.VOL:this.MKT)); }
+  _deptDefaults(){ const d=this._dept(); return d==='emkt'?this.EMKT_DEFAULTS:(d==='pr'?this.PR_DEFAULTS:(d==='vol'?this.VOL_DEFAULTS:this.DEFAULTS)); }
+  _ns(suffix){ return 'kpi_' + this._dept() + '_' + suffix; }
+  _deptInfo(){
+    const d=this._dept();
+    if(d==='emkt') return { section:'إدارة العلاقات العامة والإعلام', title:'قسم التسويق الإلكتروني', owner:'NUSAIBA AL SUMAIT' };
+    if(d==='pr') return { section:'الإدارة التنفيذية', title:'إدارة العلاقات العامة والإعلام', owner:'NUSAIBA AL SUMAIT' };
+    if(d==='vol') return { section:'إدارة العلاقات العامة والإعلام', title:'قسم شئون المتطوعين', owner:'MOHAMED ALTHEEB' };
+    return { section:'إدارة العلاقات العامة والإعلام', title:'قسم التسويق', owner:'NUSAIBA AL SUMAIT' };
+  }
+  _loadDept(){
+    this._loadMeta(); this._loadCustom(); this._loadDeleted(); this._loadYears();
+    this._loadPeriodForYear(this.state.period, this.state.year);
+    this._lastKey = null; this.forceUpdate();
+  }
+
+  componentDidMount(){ this._loadMeta(); this._loadCustom(); this._loadDeleted(); this._loadYears(); this._loadPeriod(this.state.period); this._highlight(); this._draw(); }
+
+  _loadDeleted(){ let d; try{ d=JSON.parse(localStorage.getItem(this._ns('deleted'))||'[]'); }catch(e){ d=[]; } this.setState({ deleted: Array.isArray(d)?d:[] }); }
+  _saveDeleted(d){ try{ localStorage.setItem(this._ns('deleted'), JSON.stringify(d)); }catch(e){} }
+  delKpi = (e) => {
+    e.stopPropagation();
+    const id = e.currentTarget.dataset.id;
+    if(!confirm('حذف هذا المؤشر؟ يمكنك استرجاعه لاحقًا من «سلة المحذوفات».')) return;
+    const d = [...new Set([ ...(this.state.deleted||[]), id ])];
+    this.setState({ deleted: d, selectedId: this.state.selectedId===id?null:this.state.selectedId });
+    this._saveDeleted(d); this._lastKey=null;
+  };
+  restoreKpi = (e) => {
+    const id = e.currentTarget.dataset.id;
+    const d = (this.state.deleted||[]).filter(x=>x!==id);
+    this.setState({ deleted: d }); this._saveDeleted(d); this._lastKey=null;
+  };
+  toggleTrash = () => { this.setState({ trashOpen: !this.state.trashOpen }); };  _coloredMKT(){ return this._effMKT().map((k,idx)=>({ ...k, dot:this.PALETTE[idx % this.PALETTE.length] })); }
+  _deletedKpis(){ const del=this.state.deleted||[]; return this._coloredMKT().filter(k=>del.includes(k.id)); }
+
+  _loadYears(){
+    let ys; try{ ys=JSON.parse(localStorage.getItem(this._ns('years'))||'null'); }catch(e){ ys=null; }
+    if(!Array.isArray(ys)||!ys.length) ys = this.YEARS.slice();
+    this.setState({ years: ys, year: ys.includes(this.state.year)?this.state.year:ys[ys.length-1] });
+  }
+  _saveYears(ys){ try{ localStorage.setItem(this._ns('years'), JSON.stringify(ys)); }catch(e){} }
+  addYear = () => {
+    const v = (prompt('أدخل السنة الجديدة (مثال 2028):')||'').trim();
+    if(!/^\d{4}$/.test(v)){ if(v) alert('يرجى إدخال سنة صحيحة من أربعة أرقام.'); return; }
+    if(this.state.years.includes(v)){ alert('السنة موجودة بالفعل.'); return; }
+    const ys = [...this.state.years, v].sort();
+    this.setState({ years: ys, year: v }); this._saveYears(ys); this._loadPeriodForYear(this.state.period, v); this._lastKey=null;
+  };
+  delYear = () => {
+    if(this.state.years.length<=1){ alert('لا يمكن حذف آخر سنة.'); return; }
+    const y = this.state.year;
+    if(!confirm('حذف سنة '+y+' من القائمة؟ (ستبقى البيانات المخزّنة قابلة للاسترجاع عند إعادة إضافتها)')) return;
+    const ys = this.state.years.filter(x=>x!==y);
+    const ny = ys[ys.length-1];
+    this.setState({ years: ys, year: ny }); this._saveYears(ys); this._loadPeriodForYear(this.state.period, ny); this._lastKey=null;
+  };
+  _loadPeriodForYear(month, year){
+    let cur = this._getStored(month, year);
+    if(!cur){ cur = (month===this.SEED_MONTH && year===this.SEED_YEAR) ? { ...this._deptDefaults() } : {}; }
+    this.setState({ current: cur });
+  }
+
+  _loadCustom(){ let c; try{ c=JSON.parse(localStorage.getItem(this._ns('custom'))||'[]'); }catch(e){ c=[]; } this.setState({ customKpis:c }); }
+  _saveCustom(c){ try{ localStorage.setItem(this._ns('custom'), JSON.stringify(c)); }catch(e){} }
+  _baseKpis(){ return [ ...this._deptList(), ...((this.state.customKpis)||[]) ]; }
+  toggleAdd = () => { this.setState({ addOpen: !this.state.addOpen }); };
+  updDraft = (e) => { const f=e.target.dataset.f; this.setState({ draft: { ...this.state.draft, [f]: e.target.value } }); };
+  saveKpi = () => {
+    const d = this.state.draft;
+    if(!d.name.trim() || d.target===''){ alert('يرجى إدخال اسم المؤشر والمستهدف.'); return; }
+    const k = { id:'C'+(Date.now()%100000), name:d.name.trim(), desc:d.desc.trim(), freq:d.freq,
+      weight:(d.weight||'0')+ (String(d.weight).includes('%')?'':'%'), target:parseFloat(d.target), unit:d.unit };
+    const c = [ ...(this.state.customKpis||[]), k ];
+    this.setState({ customKpis:c, addOpen:false, draft:{ name:'', desc:'', freq:'شهري', weight:'', target:'', unit:'%' } });
+    this._saveCustom(c);
+  };
+  selectRow = (e) => {
+    if(e.target.tagName==='INPUT') return;
+    const id = e.currentTarget.dataset.kpiRow;
+    this.setState({ selectedId: this.state.selectedId===id ? null : id });
+  };
+  clearSel = () => { this.setState({ selectedId: null }); };
+
+  // ---- editable meta (target / weight / name) persisted across months ----
+  _loadMeta(){
+    let m; try { m = JSON.parse(localStorage.getItem(this._ns('meta'))||'{}'); } catch(e){ m={}; }
+    this.setState({ meta: m });
+  }
+  _saveMeta(m){ try { localStorage.setItem(this._ns('meta'), JSON.stringify(m)); } catch(e){} }
+  _effMKT(){
+    return this._baseKpis().map(k=>{
+      const o = (this.state.meta||{})[k.id] || {};
+      return { ...k,
+        name: o.name!==undefined ? o.name : k.name,
+        freq: o.freq!==undefined ? o.freq : k.freq,
+        weight: o.weight!==undefined ? o.weight : k.weight,
+        target: o.target!==undefined ? o.target : k.target };
+    });
+  }
+  editMeta = (e) => {
+    const id = e.target.dataset.id, field = e.target.dataset.field;
+    let v = e.target.value;
+    if(field==='target') v = v===''? '' : parseFloat(v);
+    const meta = { ...this.state.meta, [id]: { ...((this.state.meta||{})[id]||{}), [field]: v } };
+    this.setState({ meta }); this._saveMeta(meta); this._lastKey=null;
+  };
+  toggleEdit = () => { this.setState({ editMode: !this.state.editMode }); };
+
+  _mktKey(month, year){ return 'kpi_' + this._dept() + '_' + (year||this.state.year) + '_' + month; }
+  _getStored(month, year){
+    try { const s = localStorage.getItem(this._mktKey(month, year)); return s ? JSON.parse(s) : null; } catch(e){ return null; }
+  }
+  _loadPeriod(month){
+    let cur = this._getStored(month);
+    if(!cur){
+      if(this._dept()==='mkt' && month===this.SEED_MONTH && this.state.year===this.SEED_YEAR){ cur = { ...this.DEFAULTS }; this._saveMktFor(month, cur); }
+      else if(this._dept()==='emkt' && month===this.SEED_MONTH && this.state.year===this.SEED_YEAR){ cur = { ...this.EMKT_DEFAULTS }; this._saveMktFor(month, cur); }
+      else { cur = {}; }  // NEW month/year → empty fields to fill
+    }
+    this.setState({ current: cur });
+  }
+  _saveMktFor(month, cur){ try { localStorage.setItem(this._mktKey(month), JSON.stringify(cur)); } catch(e){} }
+  _saveMkt(cur){ this._saveMktFor(this.state.period, cur); }
+  _hasData(cur){ return cur && Object.keys(cur).some(k=> cur[k]!=='' && cur[k]!==null && !isNaN(cur[k])); }
+  setPeriod = (e) => { const p = e.target.value; this.setState({ period: p }); if(p!=='كل الشهور') this._loadPeriod(p); this._lastKey=null; };
+  setYear = (e) => {
+    const y = e.target.value; const m = this.state.period;
+    // load stored data for the same month under the new year
+    let cur = this._getStored(m, y);
+    if(!cur){ cur = (m===this.SEED_MONTH && y===this.SEED_YEAR) ? { ...this.DEFAULTS } : {}; }
+    this.setState({ year: y, current: cur }); this._lastKey=null;
+  };
+  setFilter = (e) => { const f=e.target.dataset.f; this.setState({ [f]: e.target.value }); };
+  setSearch = (e) => { this.setState({ search: e.target.value }); };
+  globalSearch = (e) => {
+    const v = e.target.value;
+    const depts = ['marketing','emarketing','prmedia','volunteers'];
+    if(!depts.includes(this.state.screen)){ this.setState({ screen:'prmedia', search:v }); this._lastKey=null; }
+    else { this.setState({ search:v }); }
+  };
+  onUpload = (e) => {
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const wb = XLSX.read(ev.target.result, { type:'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(ws, { header:1 });
+        // find header row + columns for id and current value
+        let idCol=-1, valCol=-1, hdr=0;
+        for(let r=0;r<Math.min(json.length,5);r++){
+          const row=(json[r]||[]).map(c=>(''+c).trim());
+          row.forEach((c,i)=>{
+            if(/id|كود|رقم/i.test(c)) idCol=i;
+            if(/الحالي|current|القيمة|actual|value/i.test(c)) valCol=i;
+          });
+          if(idCol>=0 && valCol>=0){ hdr=r; break; }
+        }
+        const cur = { ...this.state.current };
+        let n=0;
+        const ids = this._deptList().map(k=>k.id);
+        for(let r=hdr+1;r<json.length;r++){
+          const row=json[r]||[]; if(!row.length) continue;
+          let id = idCol>=0 ? (''+row[idCol]).replace(/[^0-9]/g,'') : (''+row[0]).replace(/[^0-9]/g,'');
+          let val = valCol>=0 ? row[valCol] : row[row.length-1];
+          if(ids.includes(id) && val!==undefined && val!=='' && !isNaN(parseFloat(val))){ cur[id]=parseFloat(val); n++; }
+        }
+        if(n>0){ this.setState({ current: cur }); this._saveMkt(cur); this._lastKey=null; alert('تم استيراد '+n+' قيمة لشهر '+this.state.period+' ✓'); }
+        else { alert('تعذّر مطابقة البيانات. تأكد من وجود عمود «الكود» وعمود «الحالي».'); }
+      } catch(err){ alert('خطأ في قراءة الملف: '+err); }
+    };
+    reader.readAsArrayBuffer(file);
+    e.target.value='';
+  };
+  editCurrent = (e) => {
+    const id = e.target.dataset.id;
+    const v = e.target.value;
+    const cur = { ...this.state.current, [id]: v==='' ? '' : parseFloat(v) };
+    this.setState({ current: cur });
+    this._saveMkt(cur);
+    this._lastKey = null; // force chart redraw
+  };
+  _fmt(n, unit){
+    if(n===''||n===undefined||n===null||isNaN(n)) return '—';
+    if(unit==='money') return (n/1e6).toFixed(2)+'M';
+    if(unit==='%') return n+'%';
+    return ''+n;
+  }
+  PALETTE = ['#2563EB','#7C3AED','#16A34A','#D97706','#0891B2','#DB2777','#65A30D','#DC2626','#0D9488','#9333EA','#CA8A04','#E11D48'];
+  _aggMap(){
+    const sums={}, counts={};
+    this.MONTHS.forEach(m=>{
+      const map=this._getStored(m)||{};
+      Object.keys(map).forEach(id=>{ const v=map[id]; if(v!==''&&v!==undefined&&!isNaN(v)){ sums[id]=(sums[id]||0)+parseFloat(v); counts[id]=(counts[id]||0)+1; } });
+    });
+    const avg={}; Object.keys(sums).forEach(id=> avg[id]=Math.round((sums[id]/counts[id])*100)/100);
+    return avg;
+  }
+  _mktComputed(){ return this._computeFor(this.state.period==='كل الشهور' ? this._aggMap() : this.state.current); }
+  // filtered + sorted computed list (shared by table + charts)
+  _mktFiltered(){
+    const mc = this._mktComputed();
+    const srch = (this.state.search||'').trim();
+    let list = mc.filter(k=>{
+      if(this.state.fStatus!=='all' && k.status!==this.state.fStatus) return false;
+      if(this.state.fFreq!=='all' && k.freq!==this.state.fFreq) return false;
+      if(srch && !(k.name.includes(srch) || k.id.includes(srch) || (k.desc||'').includes(srch))) return false;
+      return true;
+    });
+    const sb=this.state.sortBy, num=v=>v===null?-1:v;
+    if(sb==='pctDesc') list=[...list].sort((a,b)=>num(b.pctN)-num(a.pctN));
+    else if(sb==='pctAsc') list=[...list].sort((a,b)=>num(a.pctN)-num(b.pctN));
+    else if(sb==='weightDesc') list=[...list].sort((a,b)=>parseFloat(b.weight)-parseFloat(a.weight));
+    else if(sb==='name') list=[...list].sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+    return list;
+  }
+  _mktSig(){
+    const s=this.state;
+    return [s.selectedId,s.fStatus,s.fFreq,s.sortBy,s.search,s.period,s.year,
+      JSON.stringify(s.current),JSON.stringify(s.meta),(s.customKpis||[]).length,(s.deleted||[]).join(',')].join('|');
+  }
+  // one KPI's actual across the current year's 12 months
+  _seriesForKpi(id){
+    return this.MONTHS.map(m=>{
+      const map = (m===this.state.period) ? this.state.current : (this._getStored(m)||{});
+      const v = map[id];
+      return (v===''||v===undefined||isNaN(v)) ? null : v;
+    });
+  }
+  _computeFor(map){
+    map = map || {};
+    const del = this.state.deleted||[];
+    return this._coloredMKT().filter(k=>!del.includes(k.id)).map(k=>{
+      const dot = k.dot;
+      const cur = map[k.id];
+      const pctN = (cur===''||cur===undefined||isNaN(cur)) ? null : Math.round(cur/k.target*100);
+      let color='var(--text-2)', bg='var(--surface-2)', status='—';
+      if(pctN!==null){
+        if(pctN>=90){ color='var(--ok)'; bg='var(--ok-soft)'; status='ممتاز'; }
+        else if(pctN>=75){ color='var(--primary-2)'; bg='var(--primary-soft)'; status='جيد'; }
+        else if(pctN>=60){ color='var(--warn)'; bg='var(--warn-soft)'; status='متوسط'; }
+        else { color='var(--bad)'; bg='var(--bad-soft)'; status='حرج'; }
+      }
+      return { ...k, curRaw: (cur===''||cur===undefined)?'':cur, targetFmt:this._fmt(k.target,k.unit),
+        pct: pctN===null?'—':pctN+'%', pctN, color, bg, status, dot, editCurrent:this.editCurrent };
+    });
+  }
+  stop = (e) => { e.stopPropagation(); };
+  toggleExport = () => { this.setState({ exportOpen: !this.state.exportOpen }); };
+  // gather {period, rows} blocks for the requested scope
+  _exportBlocks(scope){
+    const sel = this.state.selectedId;
+    const filt = rows => sel ? rows.filter(r=>r.id===sel) : rows;
+    if(scope==='all'){
+      const blocks = [];
+      this.MONTHS.forEach(m=>{
+        const map = (m===this.state.period) ? this.state.current : this._getStored(m);
+        if(this._hasData(map)) blocks.push({ period: m+' '+this.state.year, rows:filt(this._computeFor(map)) });
+      });
+      return blocks;
+    }
+    return [{ period: this.state.period+' '+this.state.year, rows:filt(this._mktComputed()) }];
+  }
+  _tableHtml(blocks){
+    const info = this._deptInfo();
+    const statusColor = s => s==='ممتاز'?'#16A34A':(s==='جيد'?'#2563EB':(s==='متوسط'?'#D97706':(s==='حرج'?'#DC2626':'#64748B')));
+    const th='style="background:#1E3A8A;color:#fff;padding:9px 11px;border:none;font-size:11.5px;font-weight:600;text-align:right"';
+    let h='';
+    blocks.forEach(b=>{
+      h+='<div style="margin:22px 0 8px;border-right:4px solid #2563EB;padding:2px 12px 2px 0"><div style="font-size:11px;color:#64748B;letter-spacing:.3px">'+info.section+' · المالك: '+info.owner+'</div><div style="font-size:16px;font-weight:700;color:#0F172A">'+info.title+' — '+b.period+'</div></div>';
+      h+='<table style="border-collapse:separate;border-spacing:0;width:100%;font-family:sans-serif;border:1px solid #E2E8F0;border-radius:10px;overflow:hidden" dir="rtl"><thead><tr>'
+        +['المؤشر','الكود','التكرار','الوزن','المستهدف','الإنجاز الفعلي','نسبة الإنجاز','الحالة'].map(c=>'<th '+th+'>'+c+'</th>').join('')+'</tr></thead><tbody>';
+      b.rows.forEach((r,i)=>{
+        const bg = i%2 ? '#F8FAFC' : '#FFFFFF';
+        const td='style="padding:8px 11px;border-bottom:1px solid #EEF2F7;font-size:11.5px;text-align:right;background:'+bg+'"';
+        const tdName='style="padding:8px 11px;border-bottom:1px solid #EEF2F7;font-size:11.5px;text-align:right;font-weight:600;color:#0F172A;background:'+bg+'"';
+        const sc=statusColor(r.status);
+        h+='<tr>'
+          +'<td '+tdName+'>'+r.name+'</td>'
+          +'<td '+td+' dir="ltr">'+r.id+'</td>'
+          +'<td '+td+'>'+r.freq+'</td>'
+          +'<td '+td+'>'+r.weight+'</td>'
+          +'<td '+td+'>'+this._fmt(r.target,r.unit)+'</td>'
+          +'<td '+td+'>'+this._fmt(r.curRaw,r.unit)+'</td>'
+          +'<td style="padding:8px 11px;border-bottom:1px solid #EEF2F7;font-size:11.5px;text-align:right;font-weight:700;color:'+sc+';background:'+bg+'">'+r.pct+'</td>'
+          +'<td style="padding:8px 11px;border-bottom:1px solid #EEF2F7;text-align:right;background:'+bg+'"><span style="font-size:10.5px;font-weight:600;color:'+sc+';background:'+sc+'1a;padding:3px 10px;border-radius:999px">'+r.status+'</span></td>'
+          +'</tr>';
+      });
+      h+='</tbody></table>';
+    });
+    return h;
+  }
+  // per-KPI dataset: one entry per KPI, its values across all months (for multi-sheet export)
+  _kpiSheets(){
+    const sel = this.state.selectedId;
+    const monthData = this.MONTHS.map(m=>{
+      const map = (m===this.state.period) ? this.state.current : (this._getStored(m)||{});
+      return { m, rows: this._computeFor(map) };
+    });
+    let defs = this._mktComputed();
+    if(sel) defs = defs.filter(k=>k.id===sel);
+    return defs.map(k=>{
+      const rows = [];
+      monthData.forEach(md=>{
+        const r = md.rows.find(x=>x.id===k.id);
+        if(r && r.curRaw!=='' && r.curRaw!==undefined && !isNaN(r.curRaw)){
+          rows.push({ period: md.m+' '+this.state.year, actual: this._fmt(r.curRaw,r.unit), target: this._fmt(r.target,r.unit), pct: r.pct, status: r.status });
+        }
+      });
+      return { code: String(k.id), name: k.name, rows };
+    }).filter(s=>s.rows.length);
+  }
+  _aoaKpiTable(rows){
+    const aoa=[['المؤشر','الكود','التكرار','الوزن','المستهدف','الإنجاز الفعلي','نسبة الإنجاز','الحالة']];
+    rows.forEach(r=>aoa.push([r.name, r.id, r.freq, r.weight, this._fmt(r.target,r.unit), this._fmt(r.curRaw,r.unit), r.pct, r.status]));
+    return aoa;
+  }
+  exportRun = (e) => {
+    const fmt = e.currentTarget.dataset.fmt;
+    const scopeAll = e.currentTarget.dataset.scope==='all' || this.state.period==='كل الشهور';
+    this.setState({ exportOpen:false });
+    const info = this._deptInfo();
+    const sel = this.state.selectedId;
+    // ---- unified naming for BOTH file and sheet ----
+    let fileName, sheetName;
+    if(sel){ fileName = 'KPI-'+sel+'_'+(scopeAll?('كل_الشهور_'+this.state.year):(this.state.period+'_'+this.state.year)); sheetName = String(sel); }
+    else if(scopeAll){ fileName = 'كل_الشهور_'+this.state.year; sheetName = 'كل الشهور'; }
+    else { fileName = this.state.period+'_'+this.state.year; sheetName = this.state.period; }
+
+    if(fmt==='excel'){
+      let today = new Date().toLocaleDateString('ar-EG-u-nu-latn',{year:'numeric',month:'long',day:'numeric'});
+      let monthOnly = function(p){ return String(p).split(' ')[0]; };
+      let stc = function(s){ return s==='ممتاز'?'#16A34A':(s==='جيد'?'#2563EB':(s==='متوسط'?'#D97706':(s==='حرج'?'#DC2626':'#64748B'))); };
+      let esc = function(t){ return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+      let blocks = this._exportBlocks(scopeAll?'all':'current');
+      if(sel){ blocks = blocks.map(function(b){ return {period:b.period, rows:b.rows.filter(function(r){ return r.id===sel; })}; }).filter(function(b){ return b.rows.length; }); }
+      if(!blocks.length){ alert('لا توجد بيانات معبّأة للتصدير.'); return; }
+      let used={};
+      let sheets = blocks.map(function(b){
+        let nm = (!scopeAll && sel) ? ('KPI-'+sel) : monthOnly(b.period);
+        nm = nm.replace(/[:\\\/?*\[\]]/g,'').slice(0,31);
+        if(used[nm]){ used[nm]++; nm = nm.slice(0,28)+'_'+used[nm]; } else { used[nm]=1; }
+        return { name:nm, period:b.period, rows:b.rows };
+      });
+      let headers=['المؤشر','الكود','التكرار','الوزن','المستهدف','الإنجاز الفعلي','نسبة الإنجاز','الحالة'];
+      let self=this;
+      let sheetTable = function(s){
+        let h='<table dir="rtl" border="0" cellspacing="0" cellpadding="0" style="border-collapse:collapse">';
+        h+='<tr><td colspan="8" style="background:#0E1A33;color:#ffffff;font-size:15px;font-weight:700;padding:8px 12px">منصة مؤشرات الأداء — '+esc(info.title)+'</td></tr>';
+        h+='<tr><td colspan="8" style="background:#1D4ED8;color:#ffffff;font-size:11px;padding:5px 12px">'+esc(info.section+'  ·  المالك: '+info.owner+'  ·  '+s.period+'  ·  '+today)+'</td></tr>';
+        h+='<tr><td colspan="8" style="height:8px"></td></tr>';
+        h+='<tr>';
+        for(var j=0;j<headers.length;j++){ h+='<td style="background:#0E1A33;color:#ffffff;font-weight:700;font-size:12px;text-align:center;border:1px solid #ffffff;padding:8px 6px">'+esc(headers[j])+'</td>'; }
+        h+='</tr>';
+        s.rows.forEach(function(r,i){
+          let bg = (i%2) ? '#EEF2F8' : '#FFFFFF';
+          let c = stc(r.status);
+          let base='background:'+bg+';font-size:11px;text-align:center;border:1px solid #D9E1EC;padding:6px 6px';
+          h+='<tr>';
+          h+='<td style="'+base+';text-align:right;font-weight:700;color:#0F172A">'+esc(r.name)+'</td>';
+          h+='<td style="'+base+';color:#64748B">'+esc(r.id)+'</td>';
+          h+='<td style="'+base+'">'+esc(r.freq)+'</td>';
+          h+='<td style="'+base+'">'+esc(r.weight)+'</td>';
+          h+='<td style="'+base+'">'+esc(self._fmt(r.target,r.unit))+'</td>';
+          h+='<td style="'+base+';font-weight:700">'+esc(self._fmt(r.curRaw,r.unit))+'</td>';
+          h+='<td style="'+base+';font-weight:700;color:'+c+'">'+esc(r.pct)+'</td>';
+          h+='<td style="background:'+c+';color:#ffffff;font-weight:700;font-size:11px;text-align:center;border:1px solid #ffffff;padding:6px 6px">'+esc(r.status)+'</td>';
+          h+='</tr>';
+        });
+        return h+'</table>';
+      };
+      let wsXml='';
+      sheets.forEach(function(s){ wsXml+='<x:ExcelWorksheet><x:Name>'+esc(s.name)+'</x:Name><x:WorksheetOptions><x:DisplayRightToLeft/></x:WorksheetOptions></x:ExcelWorksheet>'; });
+      let bodyTables='';
+      sheets.forEach(function(s){ bodyTables+='<div style="page-break-after:always">'+sheetTable(s)+'</div>'; });
+      let xmlBlock='<'+'!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>'+wsXml+'</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->';
+      let doc='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8">'+xmlBlock+'</head><body>'+bodyTables+'</body></html>';
+      let blob=new Blob(['\ufeff'+doc],{type:'application/vnd.ms-excel;charset=utf-8'});
+      let url=URL.createObjectURL(blob);
+      let a=document.createElement('a'); a.href=url; a.download=fileName+'.xls';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); },1500);
+      return;
+    }
+
+    // ===== PDF (professional branded report) =====
+    const pnum = v => { const n=parseFloat(String(v).replace('%','').replace(/,/g,'')); return isNaN(n)?0:n; };
+    const sc = s => s==='ممتاز'?'#16A34A':(s==='جيد'?'#2563EB':(s==='متوسط'?'#D97706':(s==='حرج'?'#DC2626':'#64748B')));
+    // achievement bar + status pill cell renderers
+    const barCell = pct => { const n=Math.min(pnum(pct),100); const c=sc(n>=90?'ممتاز':n>=75?'جيد':n>=60?'متوسط':'حرج');
+      return '<div style="display:flex;align-items:center;gap:7px"><div style="flex:1;height:7px;background:#EEF2F7;border-radius:6px;overflow:hidden"><div style="height:100%;width:'+n+'%;background:'+c+';border-radius:6px"></div></div><span style="font-weight:700;color:'+c+';font-size:11px;min-width:34px">'+pct+'</span></div>'; };
+    const pill = s => '<span style="display:inline-block;font-size:10px;font-weight:600;color:'+sc(s)+';background:'+sc(s)+'14;padding:3px 11px;border-radius:999px;white-space:nowrap">'+s+'</span>';
+    const tableBlock = (subtitle, headers, rows) => {
+      const alignEnd = headers.length-2; // pct col index
+      let h = subtitle ? '<div style="margin:22px 0 9px;display:flex;align-items:center;gap:9px"><span style="width:6px;height:19px;background:#2563EB;border-radius:3px"></span><span style="font-size:15px;font-weight:700;color:#0F172A">'+subtitle+'</span></div>' : '';
+      h += '<table style="border-collapse:separate;border-spacing:0;width:100%;border:1px solid #E5EAF1;border-radius:12px;overflow:hidden"><thead><tr>';
+      headers.forEach(c=> h+='<th style="background:#0E1A33;color:#fff;padding:10px 11px;font-size:11px;font-weight:600;text-align:right;white-space:nowrap">'+c+'</th>');
+      h += '</tr></thead><tbody>';
+      rows.forEach((r,i)=>{ const bg=i%2?'#F7F9FC':'#FFFFFF';
+        h+='<tr>';
+        r.cells.forEach((c,ci)=>{ const first=ci===0;
+          h+='<td style="padding:9px 11px;border-bottom:1px solid #EEF2F7;font-size:11px;text-align:right;background:'+bg+';'+(first?'font-weight:600;color:#0F172A;':'color:#334155;')+(ci===1?'direction:ltr;font-family:monospace;color:#64748B;':'')+'">'+c+'</td>'; });
+        h+='<td style="padding:9px 11px;border-bottom:1px solid #EEF2F7;background:'+bg+';min-width:120px">'+barCell(r.pct)+'</td>';
+        h+='<td style="padding:9px 11px;border-bottom:1px solid #EEF2F7;background:'+bg+';text-align:center">'+pill(r.status)+'</td>';
+        h+='</tr>';
+      });
+      return h+'</tbody></table>';
+    };
+    // ---- assemble sections + summary depending on scope/selection ----
+    let heading, subtitleTop, sectionsHtml='', summaryRows;
+    if(sel){
+      const s = (scopeAll ? this._kpiSheets()[0] : (()=>{ const k=this._mktComputed().find(x=>x.id===sel); return k?{code:k.id,name:k.name,rows:[{period:this.state.period+' '+this.state.year, actual:this._fmt(k.curRaw,k.unit), target:this._fmt(k.target,k.unit), pct:k.pct, status:k.status}]}:null; })());
+      if(!s || !s.rows.length){ alert('لا توجد بيانات معبّأة للتصدير.'); return; }
+      heading = 'تقرير مؤشر · '+s.name;
+      subtitleTop = 'الكود '+s.code+' · '+(scopeAll?'كل الشهور':(this.state.period+' '+this.state.year));
+      summaryRows = s.rows.map(r=>({pctN:pnum(r.pct)}));
+      sectionsHtml = tableBlock(scopeAll?'الأداء الشهري':'النتيجة', ['الشهر','الإنجاز الفعلي','المستهدف'], s.rows.map(r=>({cells:[r.period, r.actual, r.target], pct:r.pct, status:r.status})));
+    } else {
+      const blocks = this._exportBlocks(scopeAll?'all':'current');
+      if(!blocks.length){ alert('لا توجد بيانات معبّأة للتصدير.'); return; }
+      heading = 'تقرير مؤشرات ' + info.title;
+      subtitleTop = scopeAll ? ('كل الشهور · '+this.state.year) : (this.state.period+' '+this.state.year);
+      summaryRows = blocks[0].rows.map(r=>({pctN:r.pctN}));
+      blocks.forEach(b=>{ sectionsHtml += tableBlock(blocks.length>1?b.period:'', ['المؤشر','الكود','التكرار','الوزن','المستهدف','الإنجاز الفعلي'],
+        b.rows.map(r=>({cells:[r.name, r.id, r.freq, r.weight, this._fmt(r.target,r.unit), this._fmt(r.curRaw,r.unit)], pct:r.pct, status:r.status}))); });
+    }
+    // summary strip
+    const valid = summaryRows.filter(r=>!isNaN(r.pctN));
+    const avg = valid.length ? Math.round(valid.reduce((a,b)=>a+b.pctN,0)/valid.length) : 0;
+    const onT = valid.filter(r=>r.pctN>=90).length;
+    const below = valid.filter(r=>r.pctN<75).length;
+    const avgC = avg>=90?'#16A34A':avg>=75?'#2563EB':avg>=60?'#D97706':'#DC2626';
+    const card = (label,val,c) => '<div style="flex:1;background:#fff;border:1px solid #E5EAF1;border-radius:12px;padding:13px 16px"><div style="font-size:10.5px;color:#64748B;margin-bottom:5px">'+label+'</div><div style="font-size:22px;font-weight:800;color:'+(c||'#0F172A')+'">'+val+'</div></div>';
+    const summary = '<div style="display:flex;gap:12px;margin-top:18px">'
+      + card('عدد '+(sel?'القراءات':'المؤشرات'), (sel?summaryRows.length:valid.length))
+      + card('متوسط الإنجاز', avg+'%', avgC)
+      + card('محقّقة (≥90%)', onT, '#16A34A')
+      + card('دون المستهدف (<75%)', below, below?'#DC2626':'#16A34A')
+      + '</div>';
+    const w = window.open('', '_blank');
+    if(!w){ alert('يرجى السماح بالنوافذ المنبثقة لتصدير PDF.'); return; }
+    const today = new Date().toLocaleDateString('ar-EG-u-nu-latn', {year:'numeric',month:'long',day:'numeric'});
+    w.document.write('<html dir="rtl"><head><meta charset="utf-8"><title>'+fileName+'</title>'
+      +'<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&display=swap" rel="stylesheet">'
+      +'<style>@page{margin:13mm}*{box-sizing:border-box}body{font-family:"IBM Plex Sans Arabic",sans-serif;color:#0F172A;margin:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+      +'thead{display:table-header-group}tr{break-inside:avoid}table{break-inside:auto}'
+      +'.hd{background:linear-gradient(120deg,#0E1A33,#1D4ED8);color:#fff;border-radius:16px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between}'
+      +'.lg{width:52px;height:52px;border-radius:13px;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;letter-spacing:1px}'
+      +'.ft{margin-top:22px;padding-top:12px;border-top:1px solid #E5EAF1;font-size:10px;color:#94A3B8;display:flex;justify-content:space-between}</style></head>'
+      +'<body style="padding:24px">'
+      +'<div class="hd"><div><div style="font-size:11.5px;opacity:.8;letter-spacing:.4px">منصة مؤشرات الأداء · '+info.section+'</div>'
+      +'<div style="font-size:22px;font-weight:800;margin-top:4px">'+heading+'</div>'
+      +'<div style="font-size:12px;opacity:.85;margin-top:5px">'+subtitleTop+' · المالك: '+info.owner+'</div></div>'
+      +'<div style="text-align:left"><div class="lg">KPI</div><div style="font-size:9.5px;opacity:.75;margin-top:6px;text-align:center">'+today+'</div></div></div>'
+      +summary
+      +sectionsHtml
+      +'<div class="ft"><span>منصة مؤشرات الأداء المؤسسي — Enterprise EPM</span><span>'+fileName+'</span></div>'
+      +'<scr'+'ipt>window.onload=function(){setTimeout(function(){window.print();},400);}</scr'+'ipt></body></html>');
+    w.document.close();
+  };
+  componentDidUpdate(){ this._highlight(); this._draw(); }
+
+  _highlight(){
+    document.querySelectorAll('[data-nav]').forEach(n=>{
+      const on = n.dataset.screen === this.state.screen;
+      n.style.background = on ? 'var(--primary)' : 'transparent';
+      n.style.color = on ? '#fff' : 'var(--sidebar-text)';
+      n.style.fontWeight = on ? '600' : '400';
+    });
+    document.querySelectorAll('.tabbtn').forEach(t=>{
+      const on = t.dataset.tab === this.state.tab;
+      t.style.background = on ? 'var(--primary-soft)' : 'transparent';
+      t.style.color = on ? 'var(--primary-2)' : 'var(--text-2)';
+      t.style.fontWeight = on ? '600' : '500';
+    });
+    document.querySelectorAll('[data-kpi-row]').forEach(r=>{
+      const on = r.dataset.kpiRow === this.state.selectedId;
+      r.style.background = on ? 'var(--primary-soft)' : '';
+      r.style.borderRightColor = on ? 'var(--primary)' : 'transparent';
+    });
+  }
+
+  _pal(){
+    const d = this.state.theme === 'dark';
+    return {
+      text: d ? '#EEF2F8' : '#0F172A',
+      muted: d ? '#647089' : '#94A3B8',
+      grid: d ? '#243146' : '#E6EAF2',
+      primary: d ? '#3B82F6' : '#2563EB',
+      ok:'#22C55E', warn:'#F59E0B', bad:'#EF4444', info:'#7C3AED',
+      tooltip: d ? 'dark' : 'light'
+    };
+  }
+
+  _mk(id, opts){
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(this.charts[id]){ try{this.charts[id].destroy();}catch(e){} delete this.charts[id]; }
+    const c = new ApexCharts(el, opts);
+    c.render();
+    this.charts[id] = c;
+  }
+
+  _draw(){
+    if(!window.ApexCharts){ setTimeout(()=>this._draw(), 200); return; }
+    let key = this.state.screen + '|' + this.state.theme + '|' + this.state.view;
+    if(this.state.screen==='marketing' || this.state.screen==='emarketing' || this.state.screen==='prmedia' || this.state.screen==='volunteers') key += '|' + this._mktSig();
+    if(this._lastKey === key) return;
+    // destroy all when switching
+    Object.keys(this.charts).forEach(k=>{ try{this.charts[k].destroy();}catch(e){} });
+    this.charts = {};
+    this._lastKey = key;
+    const p = this._pal();
+    const base = {
+      chart:{ fontFamily:'IBM Plex Sans Arabic, sans-serif', toolbar:{show:false}, animations:{enabled:true,speed:500}, foreColor:p.muted },
+      tooltip:{ theme:p.tooltip },
+      grid:{ borderColor:p.grid, strokeDashArray:4 },
+      dataLabels:{ enabled:false }
+    };
+
+    if(this.state.screen==='exec'){
+      this._mk('ch-trend', {...base,
+        chart:{...base.chart, type:'area', height:250},
+        series:[{name:'الإنجاز %', data:[62,65,68,64,71,74,73,76,78,77,80,82]}],
+        colors:[p.primary],
+        stroke:{curve:'smooth', width:3},
+        fill:{type:'gradient', gradient:{shadeIntensity:1, opacityFrom:.35, opacityTo:.02, stops:[0,100]}},
+        xaxis:{categories:['ينا','فبر','مار','أبر','ماي','يون','يول','أغس','سبت','أكت','نوف','ديس'], axisBorder:{show:false}, axisTicks:{show:false}},
+        yaxis:{ opposite:true, min:40, max:100, labels:{formatter:v=>v+'%'} }
+      });
+      this._mk('ch-gauge', {...base,
+        chart:{...base.chart, type:'radialBar', height:250},
+        series:[78], labels:['الإنجاز'],
+        colors:[p.primary],
+        plotOptions:{radialBar:{hollow:{size:'62%'}, track:{background:p.grid},
+          dataLabels:{name:{fontSize:'13px', color:p.muted, offsetY:24}, value:{fontSize:'34px', fontWeight:700, color:p.text, offsetY:-14, formatter:v=>v+'%'}}}},
+        fill:{type:'gradient', gradient:{shade:'dark', type:'horizontal', gradientToColors:['#22C55E'], stops:[0,100]}}
+      });
+      this._mk('ch-bsc', {...base,
+        chart:{...base.chart, type:'bar', height:250},
+        series:[{name:'الإنجاز %', data:[88,74,82,69]}],
+        colors:[p.primary],
+        plotOptions:{bar:{borderRadius:7, columnWidth:'50%', distributed:true}},
+        legend:{show:false},
+        colors:[p.primary, p.ok, p.warn, p.info],
+        xaxis:{categories:['المالي','المستفيدون','العمليات','التعلم والنمو'], axisBorder:{show:false}, axisTicks:{show:false}},
+        yaxis:{ opposite:true, max:100, labels:{formatter:v=>v+'%'} }
+      });
+      this._mk('ch-status', {...base,
+        chart:{...base.chart, type:'donut', height:250},
+        series:[24,18,6,4], labels:['مكتمل','قيد التنفيذ','متعثّر','لم يبدأ'],
+        colors:[p.ok, p.primary, p.warn, p.muted],
+        legend:{position:'bottom', fontSize:'12px'},
+        stroke:{colors:['transparent']},
+        plotOptions:{pie:{donut:{size:'68%', labels:{show:true, total:{show:true, label:'الإجمالي', color:p.muted, formatter:()=>'52'}, value:{color:p.text, fontWeight:700}}}}}
+      });
+    }
+    else if(this.state.screen==='integration'){
+      this._mk('ch-integration', {...base,
+        chart:{...base.chart, type:'bar', height:200, stacked:true},
+        series:[
+          { name:'ناجحة', data:[120,340,210,180,90] },
+          { name:'فاشلة', data:[2,0,5,1,0] }
+        ],
+        colors:[p.ok, p.bad],
+        plotOptions:{bar:{borderRadius:5, columnWidth:'55%'}},
+        xaxis:{categories:['HR','ERP','Power BI','Excel','M365'], axisBorder:{show:false}, axisTicks:{show:false}},
+        yaxis:{ opposite:true },
+        legend:{position:'top', horizontalAlign:'left'},
+        tooltip:{ theme:p.tooltip }
+      });
+    }
+    else if(this.state.screen==='marketing' || this.state.screen==='emarketing' || this.state.screen==='prmedia' || this.state.screen==='volunteers'){
+      const fl = this._mktFiltered();
+      const sel = this.state.selectedId;
+      const dark = this.state.theme==='dark';
+      const shortName = n => n.length>22 ? n.slice(0,21)+'…' : n;
+      const cats = fl.map(k=>[shortName(k.name), '('+k.id+')']);
+      const black = dark ? '#F1F5F9' : '#000000';   // clear axis/label ink
+      const targetLine = dark ? '#F8FAFC' : '#000000';   // clear black target reference
+      const axisBase = { ...base, chart:{...base.chart, foreColor: black } };
+      // ===== CHART 1: achievement% per KPI — each KPI its own color + clear black target line =====
+      this._mk('ch-mkt', {...axisBase,
+        chart:{...axisBase.chart, type:'bar', height:440},
+        series:[{ name:'نسبة الإنجاز', data: fl.map(k=>k.pctN||0) }],
+        plotOptions:{bar:{borderRadius:6, horizontal:true, barHeight:'62%', distributed:true}},
+        colors: fl.map(k=> sel && k.id!==sel ? (dark?'#33435E':'#D6DEEC') : k.dot),
+        legend:{show:false},
+        dataLabels:{enabled:true, formatter:v=>v+'%', style:{fontSize:'11px',colors:['#fff'],fontWeight:700}},
+        annotations:{ xaxis:[{ x:100, borderColor:targetLine, borderWidth:2.5, strokeDashArray:0,
+          label:{ text:'المستهدف', orientation:'horizontal', style:{ color:'#fff', background:targetLine, fontSize:'11px', fontWeight:600, padding:{left:6,right:6,top:3,bottom:3} } } }] },
+        xaxis:{max:120, tickAmount:6, categories:cats, labels:{style:{colors:black},formatter:v=>Math.round(v)+'%'}},
+        tooltip:{ theme:p.tooltip, y:{formatter:v=>v+'%'} }
+      });
+    }
+    else if(this.state.screen==='maturity'){
+      this._mk('ch-maturity', {...base,
+        chart:{...base.chart, type:'radar', height:320},
+        series:[{name:'المستوى الحالي', data:[4,3,4,2,3]},{name:'المستهدف', data:[5,4,5,4,4]}],
+        colors:[p.primary, p.ok],
+        labels:['القيادة','العمليات','البيانات','الثقافة','التقنية'],
+        stroke:{width:2},
+        fill:{opacity:.15},
+        markers:{size:3},
+        yaxis:{max:5, tickAmount:5, show:false},
+        legend:{position:'bottom'}
+      });
+    }
+    else if(this.state.screen==='kpis' && this.state.view==='card'){
+      this._mk('ch-card-trend', {...base,
+        chart:{...base.chart, type:'line', height:280},
+        series:[{name:'الفعلي', data:[72,75,71,78,82,80,85,88]},{name:'المستهدف', data:[80,80,80,85,85,85,90,90]}],
+        colors:[p.primary, p.muted],
+        stroke:{curve:'smooth', width:[3,2], dashArray:[0,5]},
+        markers:{size:4},
+        xaxis:{categories:['ينا','فبر','مار','أبر','ماي','يون','يول','أغس'], axisBorder:{show:false}, axisTicks:{show:false}},
+        yaxis:{opposite:true, labels:{formatter:v=>v+'%'}},
+        legend:{position:'top', horizontalAlign:'left'}
+      });
+    }
+  }
+
+  go = (e) => {
+    const s = e.currentTarget.dataset.screen;
+    if(!s) return;
+    if(s==='marketing' || s==='emarketing' || s==='prmedia' || s==='volunteers'){
+      this.setState({ screen: s, view: 'list', selectedId: null, trashOpen: false, addOpen: false }, () => this._loadDept());
+    } else {
+      this.setState({ screen: s, view: 'list' });
+    }
+  };
+  toggleTheme = () => { this.setState({ theme: this.state.theme==='dark'?'light':'dark' }); };
+  toggleBell = () => { this.setState({ bellOpen: !this.state.bellOpen }); };
+  // monthly KPI-fill reminder (window: day 1–5 of each month)
+  _fillReminder(){
+    const now = new Date();
+    const day = now.getDate();
+    const monthName = this.MONTHS[now.getMonth()];
+    if(day>=1 && day<=5){
+      return { icon:'⏱', bg:'var(--warn-soft)', color:'var(--warn)', open:true,
+        title:'حان موعد تعبئة مؤشرات '+monthName,
+        desc:'يُرجى تعبئة نتائج المؤشرات قبل نهاية اليوم الخامس من الشهر. متبقٍّ '+(5-day+1)+' يوم/أيام.',
+        time:'اليوم '+day+' من '+monthName };
+    }
+    return { icon:'⏱', bg:'var(--primary-soft)', color:'var(--primary-2)', open:false,
+      title:'تذكير: تعبئة المؤشرات الشهرية',
+      desc:'تُعبّأ المؤشرات من اليوم 1 إلى 5 من كل شهر. انتهت نافذة هذا الشهر.',
+      time:'اليوم '+day+' من '+monthName };
+  }
+  openCard = () => { this.setState({ view: 'card', tab: 'history' }); };
+  backToList = () => { this.setState({ view: 'list' }); };
+  setTab = (e) => { const t = e.currentTarget.dataset.tab; if(t) this.setState({ tab: t }); };
+  onActual = (e) => { this.setState({ entryActual: e.target.value }); };
+
+  CONNECTORS = [
+    {name:'نظام الموارد البشرية (HR)', abbr:'HR', type:'SQL Server', freq:'يومي', lastSync:'قبل 12 دقيقة', status:'متصل', ok:true},
+    {name:'النظام المالي (ERP)', abbr:'ERP', type:'REST API', freq:'كل ساعة', lastSync:'قبل 40 دقيقة', status:'متصل', ok:true},
+    {name:'Power BI Service', abbr:'PBI', type:'Power BI', freq:'يومي', lastSync:'قبل 3 ساعات', status:'متصل', ok:true},
+    {name:'ملفات Excel للمؤشرات', abbr:'XLS', type:'Excel / CSV', freq:'يدوي', lastSync:'أمس 16:20', status:'متصل', ok:true},
+    {name:'Microsoft 365 / Outlook', abbr:'M365', type:'Microsoft 365', freq:'فوري', lastSync:'قبل ساعة', status:'يحتاج مصادقة', ok:false},
+    {name:'بوابة الخدمات الإلكترونية', abbr:'WEB', type:'REST API', freq:'كل ساعة', lastSync:'—', status:'متوقف', ok:false}
+  ];
+  AVAILABLE = [
+    {name:'SQL Server', abbr:'SQL', bg:'var(--primary-soft)', color:'var(--primary-2)'},
+    {name:'Power BI', abbr:'PBI', bg:'var(--warn-soft)', color:'var(--warn)'},
+    {name:'Microsoft 365', abbr:'365', bg:'var(--primary-soft)', color:'var(--primary-2)'},
+    {name:'Outlook', abbr:'OL', bg:'var(--primary-soft)', color:'var(--primary-2)'},
+    {name:'Excel / CSV', abbr:'XLS', bg:'var(--ok-soft)', color:'var(--ok)'},
+    {name:'REST API', abbr:'API', bg:'var(--info)', color:'#fff'}
+  ];
+  toggleConn = () => { this.setState({ connOpen: !this.state.connOpen }); };
+  updConn = (e) => { const f=e.target.dataset.f; this.setState({ connDraft: { ...this.state.connDraft, [f]: e.target.value } }); };
+  saveConn = () => {
+    const d=this.state.connDraft;
+    if(!d.name.trim()){ alert('يرجى إدخال اسم المصدر.'); return; }
+    const c={ name:d.name.trim(), abbr:d.name.trim().slice(0,3).toUpperCase(), type:d.type, freq:d.freq, lastSync:'قيد الانتظار', status:'قيد الإعداد', ok:false, custom:true };
+    this.setState({ extraConns:[...this.state.extraConns, c], connOpen:false, connDraft:{ name:'', type:'REST API', freq:'يومي' } });
+  };
+  syncAll = () => { this.setState({ _syncedAt: Date.now() }); alert('بدأت مزامنة جميع المصادر المتصلة ✓'); };
+
+  renderVals(){
+    const s = this.state.screen;
+    const titles = { exec:'اللوحة التنفيذية', kpis:'مؤشرات الأداء', strategy:'الخريطة الاستراتيجية', initiatives:'المبادرات', projects:'المشاريع · PMO', risks:'إدارة المخاطر', tasks:'المهام', ai:'المساعد الذكي', reports:'التقارير', card:'بطاقة المؤشر', dataentry:'إدخال النتائج', meetings:'الاجتماعات', decisions:'سجل القرارات', maturity:'نضج الأداء', notifications:'مركز الإشعارات', users:'المستخدمون والصلاحيات', audit:'سجل العمليات', marketing:'قسم التسويق', emarketing:'قسم التسويق الإلكتروني', prmedia:'العلاقات العامة والإعلام', volunteers:'شئون المتطوعين', integration:'مركز تكامل البيانات', settings:'إعدادات النظام' };
+    // data-entry auto-calc
+    const actual = parseFloat(this.state.entryActual);
+    const target = 90;
+    let calcAchieve='—', calcDev='—', calcColor='var(--text-2)', calcBg='var(--surface-2)', calcStatus='—';
+    if(!isNaN(actual)){
+      const ach = Math.round(actual/target*100);
+      const dev = Math.round((actual-target)/target*100);
+      calcAchieve = ach+'%';
+      calcDev = (dev>=0?'+':'')+dev+'%';
+      if(ach>=95){ calcColor='var(--ok)'; calcBg='var(--ok-soft)'; calcStatus='محقق'; }
+      else if(ach>=70){ calcColor='var(--warn)'; calcBg='var(--warn-soft)'; calcStatus='متعثر'; }
+      else { calcColor='var(--bad)'; calcBg='var(--bad-soft)'; calcStatus='حرج'; }
+    }
+    // marketing computed
+    const mc = this._mktComputed();
+    const selId = this.state.selectedId;
+    let mList = this._mktFiltered().map(k=>({ ...k, selected: k.id===selId }));
+    // cards react to BOTH filtering AND selecting a KPI:
+    // when a KPI is selected → stats reflect only that KPI; else → the filtered list
+    const statList = selId ? mList.filter(k=>k.id===selId) : mList;
+    let wsum=0, wtot=0;
+    statList.forEach(k=>{ if(k.pctN!==null){ const w=parseFloat(k.weight); wsum+=w*k.pctN; wtot+=w; } });
+    const mktAvg = wtot ? Math.round(wsum/wtot) : 0;
+    const totWeight = Math.round(statList.reduce((s,k)=>s+parseFloat(k.weight||0),0));
+    const selName = selId ? (mc.find(k=>k.id===selId)||{}).name : '';
+    return {
+      theme: this.state.theme,
+      themeIcon: this.state.theme==='dark' ? '☀' : '☾',
+      themeLabel: this.state.theme==='dark' ? 'الوضع الداكن' : 'الوضع الفاتح',
+      bellOpen: this.state.bellOpen, toggleBell: this.toggleBell,
+      alerts: (()=>{ const r=this._fillReminder(); return [ r,
+        { icon:'!', bg:'var(--bad-soft)', color:'var(--bad)', title:'مؤشر حرج يحتاج متابعة', desc:'مؤشر ضمن أقسامك أقل من الحد الأدنى.', time:'أمس' }
+      ]; })(),
+      alertCount: 2, hasAlerts: true,
+      fillReminder: this._fillReminder(),
+      showFillBanner: this._fillReminder().open && ['marketing','emarketing','prmedia','volunteers'].includes(s),
+      screenTitle: titles[s] || '',
+      go: this.go,
+      toggleTheme: this.toggleTheme,
+      isExec: s==='exec', isKpis: s==='kpis', isStrategy: s==='strategy',
+      isInitiatives: s==='initiatives', isProjects: s==='projects', isRisks: s==='risks',
+      isTasks: s==='tasks', isAi: s==='ai', isReports: s==='reports',
+      isDataentry: s==='dataentry', isMeetings: s==='meetings', isDecisions: s==='decisions',
+      isMaturity: s==='maturity', isNotifications: s==='notifications', isUsers: s==='users', isAudit: s==='audit', isMarketing: s==='marketing'||s==='emarketing'||s==='prmedia'||s==='volunteers',
+      isIntegration: s==='integration', isSettings: s==='settings',
+      toggleConn: this.toggleConn, connOpen: this.state.connOpen, updConn: this.updConn, saveConn: this.saveConn, connDraft: this.state.connDraft, syncAll: this.syncAll,
+      connectors: (()=>{ const all=[...this.CONNECTORS, ...this.state.extraConns]; return all.map(c=>({ ...c,
+        bg: c.status==='متصل'?'var(--ok-soft)':(c.status==='متوقف'?'var(--bad-soft)':'var(--warn-soft)'),
+        color: c.status==='متصل'?'var(--ok)':(c.status==='متوقف'?'var(--bad)':'var(--warn)'),
+        iconBg: c.ok?'var(--primary-soft)':'var(--surface-2)', iconColor: c.ok?'var(--primary-2)':'var(--text-3)' })); })(),
+      available: this.AVAILABLE,
+      connActive: [...this.CONNECTORS, ...this.state.extraConns].filter(c=>c.status==='متصل').length,
+      connTotal: this.CONNECTORS.length + this.state.extraConns.length,
+      connRecords: '1,240',
+      connIssues: [...this.CONNECTORS, ...this.state.extraConns].filter(c=>!c.ok).length,
+      syncLog: [
+        {msg:'اكتملت مزامنة النظام المالي (ERP) — 340 سجلًا', color:'var(--ok)', time:'09:40'},
+        {msg:'اكتملت مزامنة نظام الموارد البشرية — 120 سجلًا', color:'var(--ok)', time:'09:12'},
+        {msg:'تحذير: Microsoft 365 يحتاج إعادة مصادقة', color:'var(--warn)', time:'08:30'},
+        {msg:'اكتملت مزامنة Power BI — 210 سجلات', color:'var(--ok)', time:'06:00'},
+        {msg:'فشل الاتصال ببوابة الخدمات الإلكترونية', color:'var(--bad)', time:'أمس 23:15'}
+      ],
+      mktKpis: mList,
+      period: this.state.period, periods: ['كل الشهور'].concat(this.PERIODS), setPeriod: this.setPeriod,
+      allMonths: this.state.period==='كل الشهور',
+      entryEditable: this.state.period!=='كل الشهور',
+      year: this.state.year, years: this.state.years, setYear: this.setYear, addYear: this.addYear, delYear: this.delYear,
+      exportOpen: this.state.exportOpen, toggleExport: this.toggleExport, exportRun: this.exportRun,
+      editMode: this.state.editMode, notEdit: !this.state.editMode, toggleEdit: this.toggleEdit, editMeta: this.editMeta,
+      editLabel: this.state.editMode ? '✓ إنهاء التعديل' : '✎ تعديل الصفحة',
+      onUpload: this.onUpload,
+      fStatus: this.state.fStatus, fFreq: this.state.fFreq, sortBy: this.state.sortBy, search: this.state.search,
+      setFilter: this.setFilter, setSearch: this.setSearch, globalSearch: this.globalSearch,
+      selectRow: this.selectRow, selectedId: selId, selName, hasSelection: !!selId, clearSel: this.clearSel,
+      trendTitle: selId ? ('اتجاه: ' + selName) : 'الاتجاه الشهري العام',
+      addOpen: this.state.addOpen, toggleAdd: this.toggleAdd, updDraft: this.updDraft, saveKpi: this.saveKpi, draft: this.state.draft,
+      delKpi: this.delKpi, restoreKpi: this.restoreKpi, toggleTrash: this.toggleTrash, trashOpen: this.state.trashOpen,
+      deletedKpis: this._deletedKpis(), deletedCount: (this.state.deleted||[]).length, hasDeleted: (this.state.deleted||[]).length>0, noDeleted: (this.state.deleted||[]).length===0,
+      stop: this.stop,
+      mktCount: statList.length,
+      mktTotal: mc.length,
+      mktShown: mList.length,
+      mktCountLabel: selId ? 'المؤشر المحدد' : 'عدد المؤشرات',
+      mktAvg: mktAvg + '%',
+      mktSimpleAvg: (()=>{ const a=statList.filter(k=>k.pctN!==null); return a.length? Math.round(a.reduce((s,k)=>s+k.pctN,0)/a.length)+'%' : '—'; })(),
+      periodLabel: this.state.period + ' ' + this.state.year,
+      mktYearTitle: 'مؤشرات أداء ' + this.state.year + ' · المالك: ' + this._deptInfo().owner,
+      deptSection: this._deptInfo().section, deptTitle: this._deptInfo().title,
+      mktWeight: totWeight + '%',
+      mktBelow: statList.filter(k=>k.pctN!==null && k.pctN<75).length,
+      entryActual: this.state.entryActual, onActual: this.onActual,
+      calcAchieve, calcDev, calcColor, calcBg, calcStatus,
+      isList: s==='kpis' && this.state.view==='list',
+      isCard: s==='kpis' && this.state.view==='card',
+      openCard: this.openCard, backToList: this.backToList, setTab: this.setTab,
+      tabHistory: this.state.tab==='history', tabPlan: this.state.tab==='plan',
+      tabFiles: this.state.tab==='files', tabComments: this.state.tab==='comments', tabLog: this.state.tab==='log',
+      kpiList: [
+        {name:'العائد على الاستثمار', code:'KPI-FN-002', dept:'المالية', bsc:'المالي', pct:'94%', color:'var(--ok)', status:'محقق', badgeBg:'var(--ok-soft)'},
+        {name:'نسبة رضا المستفيدين', code:'KPI-CS-014', dept:'خدمة العملاء', bsc:'المستفيدون', pct:'80%', color:'var(--warn)', status:'متعثر', badgeBg:'var(--warn-soft)'},
+        {name:'كفاءة العمليات التشغيلية', code:'KPI-OP-021', dept:'العمليات', bsc:'العمليات', pct:'91%', color:'var(--ok)', status:'محقق', badgeBg:'var(--ok-soft)'},
+        {name:'زمن الاستجابة للمكالمات', code:'KPI-CS-018', dept:'خدمة العملاء', bsc:'المستفيدون', pct:'52%', color:'var(--bad)', status:'حرج', badgeBg:'var(--bad-soft)'},
+        {name:'معدل دوران الموظفين', code:'KPI-HR-007', dept:'الموارد البشرية', bsc:'التعلم والنمو', pct:'86%', color:'var(--ok)', status:'محقق', badgeBg:'var(--ok-soft)'},
+        {name:'نسبة إنجاز التحول الرقمي', code:'KPI-IT-011', dept:'تقنية المعلومات', bsc:'العمليات', pct:'68%', color:'var(--warn)', status:'متعثر', badgeBg:'var(--warn-soft)'},
+        {name:'الالتزام بالميزانية', code:'KPI-FN-005', dept:'المالية', bsc:'المالي', pct:'89%', color:'var(--ok)', status:'محقق', badgeBg:'var(--ok-soft)'},
+        {name:'ساعات التدريب للموظف', code:'KPI-HR-013', dept:'الموارد البشرية', bsc:'التعلم والنمو', pct:'73%', color:'var(--warn)', status:'متعثر', badgeBg:'var(--warn-soft)'}
+      ],
+      cardMeta: [
+        {k:'الكود', v:'KPI-CS-014'}, {k:'نوع المؤشر', v:'نسبة مئوية'}, {k:'وحدة القياس', v:'%'},
+        {k:'التكرار', v:'شهري'}, {k:'الوزن', v:'15%'}, {k:'المسؤول', v:'نورة القحطاني'},
+        {k:'مصدر البيانات', v:'نظام التذاكر'}, {k:'الفترة', v:'2026/01 — 2026/12'}
+      ],
+      history: [
+        {period:'يونيو 2026', actual:'72%', pct:'80%', color:'var(--warn)', approved:'معتمد'},
+        {period:'مايو 2026', actual:'70%', pct:'78%', color:'var(--warn)', approved:'معتمد'},
+        {period:'أبريل 2026', actual:'75%', pct:'83%', color:'var(--ok)', approved:'معتمد'},
+        {period:'مارس 2026', actual:'68%', pct:'76%', color:'var(--warn)', approved:'معتمد'}
+      ],
+      depts: [
+        {name:'العمليات', pct:'92%', w:'92%', color:'var(--ok)'},
+        {name:'الموارد البشرية', pct:'85%', w:'85%', color:'var(--ok)'},
+        {name:'المالية', pct:'79%', w:'79%', color:'var(--primary)'},
+        {name:'تقنية المعلومات', pct:'71%', w:'71%', color:'var(--primary)'},
+        {name:'خدمة العملاء', pct:'58%', w:'58%', color:'var(--warn)'}
+      ],
+      risks: [
+        {name:'تأخر مشروع التحول الرقمي', level:'حرج', color:'var(--bad)'},
+        {name:'نقص الكفاءات التقنية', level:'مرتفع', color:'var(--warn)'},
+        {name:'تجاوز ميزانية التشغيل', level:'مرتفع', color:'var(--warn)'},
+        {name:'ضعف جودة البيانات', level:'متوسط', color:'var(--primary)'}
+      ],
+      initList: [
+        {name:'التميز في تجربة المستفيد', objective:'رفع رضا المستفيدين', dept:'خدمة العملاء', priority:'حرجة', prBg:'var(--bad-soft)', prColor:'var(--bad)', pct:'62%', color:'var(--warn)', budget:'2.4M', spent:'1.5M', projects:'4'},
+        {name:'الحوكمة الرقمية', objective:'أتمتة العمليات الأساسية', dept:'تقنية المعلومات', priority:'عالية', prBg:'var(--warn-soft)', prColor:'var(--warn)', pct:'71%', color:'var(--primary)', budget:'3.8M', spent:'2.6M', projects:'6'},
+        {name:'تنمية الكوادر الوطنية', objective:'تطوير الكفاءات', dept:'الموارد البشرية', priority:'عالية', prBg:'var(--warn-soft)', prColor:'var(--warn)', pct:'84%', color:'var(--ok)', budget:'1.2M', spent:'0.9M', projects:'3'},
+        {name:'كفاءة الإنفاق التشغيلي', objective:'ضبط التكاليف', dept:'المالية', priority:'متوسطة', prBg:'var(--primary-soft)', prColor:'var(--primary-2)', pct:'90%', color:'var(--ok)', budget:'0.8M', spent:'0.5M', projects:'2'},
+        {name:'الاستدامة والابتكار', objective:'ثقافة الابتكار', dept:'التطوير', priority:'متوسطة', prBg:'var(--primary-soft)', prColor:'var(--primary-2)', pct:'48%', color:'var(--warn)', budget:'1.6M', spent:'0.6M', projects:'3'},
+        {name:'تكامل الأنظمة المؤسسية', objective:'التحول الرقمي', dept:'تقنية المعلومات', priority:'حرجة', prBg:'var(--bad-soft)', prColor:'var(--bad)', pct:'35%', color:'var(--bad)', budget:'5.2M', spent:'1.9M', projects:'5'}
+      ],
+      ganttRows: [
+        {name:'بوابة العملاء الرقمية', owner:'م. سعد الدوسري', offset:'0%', width:'55%', pct:'80%', color:'var(--primary)'},
+        {name:'أتمتة العمليات', owner:'م. ليلى الأحمد', offset:'16%', width:'50%', pct:'65%', color:'var(--ok)'},
+        {name:'التحول الرقمي', owner:'م. فهد المطيري', offset:'8%', width:'75%', pct:'35%', color:'var(--warn)'},
+        {name:'منصة التدريب', owner:'أ. هند العلي', offset:'33%', width:'42%', pct:'90%', color:'var(--ok)'},
+        {name:'تكامل ERP', owner:'م. طارق يوسف', offset:'50%', width:'42%', pct:'20%', color:'var(--bad)'}
+      ],
+      riskRows: [
+        {name:'تأخر مشروع التحول الرقمي', link:'مرتبط: مشروع التحول · KPI-IT-011', prob:'4 · مرتفع', impact:'5 · جسيم', level:'حرج', bg:'var(--bad-soft)', color:'var(--bad)'},
+        {name:'نقص الكفاءات التقنية', link:'مرتبط: مبادرة تنمية الكوادر', prob:'4 · مرتفع', impact:'4 · كبير', level:'مرتفع', bg:'var(--warn-soft)', color:'var(--warn)'},
+        {name:'تجاوز ميزانية التشغيل', link:'مرتبط: KPI-FN-005', prob:'3 · متوسط', impact:'4 · كبير', level:'مرتفع', bg:'var(--warn-soft)', color:'var(--warn)'},
+        {name:'ضعف جودة البيانات المدخلة', link:'مرتبط: جميع المؤشرات', prob:'3 · متوسط', impact:'3 · متوسط', level:'متوسط', bg:'var(--primary-soft)', color:'var(--primary-2)'},
+        {name:'مقاومة التغيير التنظيمي', link:'مرتبط: مبادرة الحوكمة', prob:'2 · منخفض', impact:'3 · متوسط', level:'منخفض', bg:'var(--ok-soft)', color:'var(--ok)'},
+        {name:'انقطاع مزود الخدمة السحابية', link:'مرتبط: تكامل الأنظمة', prob:'2 · منخفض', impact:'5 · جسيم', level:'مرتفع', bg:'var(--warn-soft)', color:'var(--warn)'}
+      ],
+      taskCols: [
+        {title:'جديدة', color:'var(--text-3)', count:'3', items:[
+          {tag:'KPI-CS-018', title:'مراجعة أسباب ارتفاع زمن الاستجابة', priority:'عاجل', prBg:'var(--bad-soft)', prColor:'var(--bad)', due:'٥ يوليو', who:'نو'},
+          {tag:'مشروع ERP', title:'إعداد وثيقة متطلبات التكامل', priority:'عادي', prBg:'var(--primary-soft)', prColor:'var(--primary-2)', due:'١٠ يوليو', who:'طا'}
+        ]},
+        {title:'قيد التنفيذ', color:'var(--primary)', count:'3', items:[
+          {tag:'خطة تصحيحية', title:'تدريب فريق الدعم على نظام التذاكر', priority:'مرتفع', prBg:'var(--warn-soft)', prColor:'var(--warn)', due:'١٥ أغسطس', who:'خا'},
+          {tag:'اجتماع الأداء', title:'متابعة توصيات لجنة المراجعة', priority:'عادي', prBg:'var(--primary-soft)', prColor:'var(--primary-2)', due:'٢٠ يوليو', who:'أح'}
+        ]},
+        {title:'قيد المراجعة', color:'var(--warn)', count:'2', items:[
+          {tag:'مشروع البوابة', title:'اعتماد تصميم واجهة العملاء', priority:'مرتفع', prBg:'var(--warn-soft)', prColor:'var(--warn)', due:'٨ يوليو', who:'سع'}
+        ]},
+        {title:'مكتملة', color:'var(--ok)', count:'4', items:[
+          {tag:'KPI-FN-002', title:'اعتماد نتائج الربع الأول', priority:'منجز', prBg:'var(--ok-soft)', prColor:'var(--ok)', due:'٣٠ يونيو', who:'أح'}
+        ]}
+      ],
+      reportList: [
+        {name:'التقرير التنفيذي', desc:'ملخص شامل للأداء الاستراتيجي للإدارة العليا', bg:'var(--primary-soft)', color:'var(--primary-2)'},
+        {name:'التقرير الشهري', desc:'أداء المؤشرات والنتائج خلال الشهر', bg:'var(--primary-soft)', color:'var(--primary-2)'},
+        {name:'التقرير الربعي', desc:'مراجعة الأداء الفصلية والاتجاهات', bg:'var(--primary-soft)', color:'var(--primary-2)'},
+        {name:'مقارنة الإدارات', desc:'ترتيب ومقارنة أداء الإدارات', bg:'var(--ok-soft)', color:'var(--ok)'},
+        {name:'مقارنة السنوات', desc:'تحليل الأداء عبر السنوات المالية', bg:'var(--ok-soft)', color:'var(--ok)'},
+        {name:'تقرير المخاطر', desc:'سجل المخاطر ومستويات الخطورة', bg:'var(--bad-soft)', color:'var(--bad)'},
+        {name:'تقرير المبادرات', desc:'حالة وميزانية المبادرات الاستراتيجية', bg:'var(--warn-soft)', color:'var(--warn)'},
+        {name:'تقرير المشاريع', desc:'الجداول الزمنية ونسب الإنجاز', bg:'var(--warn-soft)', color:'var(--warn)'},
+        {name:'تقرير Balanced Scorecard', desc:'الأداء عبر محاور بطاقة الأداء المتوازنة', bg:'var(--info)', color:'#fff'}
+      ],
+      meetings: [
+        {title:'لجنة مراجعة الأداء الربعية', date:'2026/07/02', type:'دوري', attendees:'9', decisions:'5', tasks:'8', status:'منعقد', bg:'var(--ok-soft)', color:'var(--ok)', followup:'85%'},
+        {title:'اجتماع متابعة التحول الرقمي', date:'2026/07/05', type:'متابعة مشاريع', attendees:'6', decisions:'3', tasks:'6', status:'منعقد', bg:'var(--ok-soft)', color:'var(--ok)', followup:'60%'},
+        {title:'لجنة إدارة المخاطر', date:'2026/07/12', type:'استثنائي', attendees:'7', decisions:'2', tasks:'4', status:'مجدول', bg:'var(--primary-soft)', color:'var(--primary-2)', followup:'—'},
+        {title:'مجلس الإدارة الشهري', date:'2026/07/20', type:'دوري', attendees:'12', decisions:'—', tasks:'—', status:'مجدول', bg:'var(--primary-soft)', color:'var(--primary-2)', followup:'—'}
+      ],
+      decisions: [
+        {text:'اعتماد ميزانية إضافية لمشروع بوابة العملاء', date:'2026/07/02', source:'لجنة الأداء الربعية', link:'مشروع البوابة', status:'قيد التنفيذ', bg:'var(--warn-soft)', color:'var(--warn)'},
+        {text:'تسريع خطة تدريب فريق خدمة العملاء', date:'2026/07/02', source:'لجنة الأداء الربعية', link:'KPI-CS-014', status:'قيد التنفيذ', bg:'var(--warn-soft)', color:'var(--warn)'},
+        {text:'إعادة جدولة مشروع التحول الرقمي', date:'2026/07/05', source:'متابعة المشاريع', link:'مبادرة الحوكمة', status:'منفّذ', bg:'var(--ok-soft)', color:'var(--ok)'},
+        {text:'تعيين مالك لمخاطر تكامل الأنظمة', date:'2026/07/05', source:'لجنة المخاطر', link:'سجل المخاطر', status:'منفّذ', bg:'var(--ok-soft)', color:'var(--ok)'},
+        {text:'اعتماد مؤشرات جديدة لمحور التعلم والنمو', date:'2026/06/28', source:'مجلس الإدارة', link:'BSC', status:'معلّق', bg:'var(--bad-soft)', color:'var(--bad)'}
+      ],
+      maturityDepts: [
+        {name:'العمليات', level:'المستوى 4 · مُدار', bg:'var(--primary-soft)', color:'var(--primary-2)'},
+        {name:'المالية', level:'المستوى 4 · مُدار', bg:'var(--primary-soft)', color:'var(--primary-2)'},
+        {name:'الموارد البشرية', level:'المستوى 3 · معرّف', bg:'var(--warn-soft)', color:'var(--warn)'},
+        {name:'تقنية المعلومات', level:'المستوى 3 · معرّف', bg:'var(--warn-soft)', color:'var(--warn)'},
+        {name:'خدمة العملاء', level:'المستوى 2 · متكرّر', bg:'var(--bad-soft)', color:'var(--bad)'}
+      ],
+      notifs: [
+        {icon:'!', bg:'var(--bad-soft)', color:'var(--bad)', title:'مؤشر حرج: زمن الاستجابة للمكالمات', desc:'انخفض إلى 52% — أقل من الحد الأدنى', time:'قبل 10 د', unread:true},
+        {icon:'⏱', bg:'var(--warn-soft)', color:'var(--warn)', title:'اقترب موعد إدخال نتائج يوليو', desc:'12 مؤشرًا بحاجة لتحديث خلال 3 أيام', time:'قبل ساعة', unread:true},
+        {icon:'✓', bg:'var(--ok-soft)', color:'var(--ok)', title:'تم اعتماد نتائج يونيو', desc:'اعتمد أحمد الشمري 24 نتيجة', time:'قبل 3 س', unread:true},
+        {icon:'◆', bg:'var(--primary-soft)', color:'var(--primary-2)', title:'مهمة جديدة مُسندة إليك', desc:'مراجعة أسباب ارتفاع زمن الاستجابة', time:'أمس', unread:false},
+        {icon:'△', bg:'var(--warn-soft)', color:'var(--warn)', title:'مخاطرة تحتاج مراجعة', desc:'تجاوز ميزانية التشغيل — موعد المراجعة اليوم', time:'أمس', unread:false},
+        {icon:'▣', bg:'var(--primary-soft)', color:'var(--primary-2)', title:'تقرير الأداء الربعي جاهز', desc:'يمكنك تصديره بصيغة PDF', time:'قبل يومين', unread:false}
+      ],
+      users: [
+        {ini:'أح', name:'أحمد الشمري', dept:'الإدارة العليا', role:'الإدارة العليا', status:'نشط', bg:'var(--ok-soft)', color:'var(--ok)'},
+        {ini:'نو', name:'نورة القحطاني', dept:'خدمة العملاء', role:'مدير إدارة', status:'نشط', bg:'var(--ok-soft)', color:'var(--ok)'},
+        {ini:'خا', name:'خالد العتيبي', dept:'خدمة العملاء', role:'محلل أداء', status:'نشط', bg:'var(--ok-soft)', color:'var(--ok)'},
+        {ini:'سع', name:'سعد الدوسري', dept:'تقنية المعلومات', role:'موظف إدخال', status:'نشط', bg:'var(--ok-soft)', color:'var(--ok)'},
+        {ini:'هن', name:'هند العلي', dept:'الموارد البشرية', role:'مدير إدارة', status:'معلّق', bg:'var(--warn-soft)', color:'var(--warn)'},
+        {ini:'مد', name:'مدير النظام', dept:'تقنية المعلومات', role:'مدير النظام', status:'نشط', bg:'var(--ok-soft)', color:'var(--ok)'}
+      ],
+      perms: [
+        {role:'مدير النظام', view:'✓', add:'✓', edit:'✓', approve:'✓'},
+        {role:'الإدارة العليا', view:'✓', add:'—', edit:'—', approve:'✓'},
+        {role:'مدير الإدارة', view:'✓', add:'✓', edit:'✓', approve:'✓'},
+        {role:'محلل الأداء', view:'✓', add:'✓', edit:'✓', approve:'—'},
+        {role:'موظف الإدخال', view:'✓', add:'✓', edit:'—', approve:'—'}
+      ],
+      auditRows: [
+        {user:'نورة القحطاني', action:'تعديل', bg:'var(--warn-soft)', color:'var(--warn)', detail:'تعديل القيمة الفعلية لمؤشر KPI-CS-014', time:'2026-07-06 09:42'},
+        {user:'أحمد الشمري', action:'اعتماد', bg:'var(--ok-soft)', color:'var(--ok)', detail:'اعتماد نتائج يونيو (24 مؤشرًا)', time:'2026-07-06 08:15'},
+        {user:'سعد الدوسري', action:'إضافة', bg:'var(--primary-soft)', color:'var(--primary-2)', detail:'إضافة نتيجة جديدة لمؤشر KPI-IT-011', time:'2026-07-05 16:30'},
+        {user:'خالد العتيبي', action:'إضافة', bg:'var(--primary-soft)', color:'var(--primary-2)', detail:'إنشاء خطة تصحيحية لمؤشر KPI-CS-014', time:'2026-07-05 14:02'},
+        {user:'مدير النظام', action:'حذف', bg:'var(--bad-soft)', color:'var(--bad)', detail:'حذف مؤشر مكرر KPI-TMP-099', time:'2026-07-05 11:20'},
+        {user:'هند العلي', action:'دخول', bg:'var(--surface-2)', color:'var(--text-2)', detail:'تسجيل دخول ناجح', time:'2026-07-05 08:00'},
+        {user:'نورة القحطاني', action:'خروج', bg:'var(--surface-2)', color:'var(--text-2)', detail:'تسجيل خروج', time:'2026-07-04 17:45'},
+        {user:'أحمد الشمري', action:'اعتماد', bg:'var(--ok-soft)', color:'var(--ok)', detail:'اعتماد قرار إعادة جدولة مشروع التحول', time:'2026-07-04 13:10'}
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
