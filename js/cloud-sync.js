@@ -11,7 +11,7 @@
 (function () {
   var PREFIX = 'kpi_';                 // نُزامن فقط مفاتيح النظام
   var API = '';                        // نفس النطاق (الخادم يخدم الواجهة)
-  var POLL_MS = 4000;                  // فترة سحب تغييرات الآخرين
+  var POLL_MS = 2500;                  // فترة سحب تغييرات الآخرين
   var lastTs = 0;
   var online = false;
   var pushTimer = null;
@@ -60,10 +60,10 @@
     if (isKpiKey(k)) schedulePush(k); // القيمة أصبحت غير موجودة → تُدفع كـ null
   };
 
+  var pendingReload = false;
   // ——— سحب تغييرات الآخرين ———
   function applyRemote(data) {
     var changed = false;
-    var editing = isEditing();
     Object.keys(data).forEach(function (k) {
       if (!isKpiKey(k)) return;
       var incoming = JSON.stringify(data[k]);
@@ -72,8 +72,9 @@
         changed = true;
       }
     });
-    // لا نُحدّث الشاشة أثناء إدخال المستخدم لئلا نُفقده ما يكتب
-    if (changed && !editing) softRefresh();
+    if (changed) pendingReload = true;
+    // إن لم يكن المستخدم يكتب الآن، اعكس التغييرات فورًا؛ وإلا انتظر حتى يتوقف
+    if (pendingReload && !isEditing() && Object.keys(pending).length === 0) softRefresh();
     return changed;
   }
 
@@ -83,9 +84,15 @@
   }
 
   function softRefresh() {
-    // أبسط طريقة موثوقة لعكس بيانات الآخرين: إعادة تحميل خفيفة
     location.reload();
   }
+
+  // متى ما توقّف المستخدم عن الكتابة، اعكس تغييرات الآخرين المعلّقة
+  document.addEventListener('focusout', function () {
+    setTimeout(function () {
+      if (pendingReload && !isEditing() && Object.keys(pending).length === 0) softRefresh();
+    }, 300);
+  });
 
   function poll() {
     if (!online) return;
