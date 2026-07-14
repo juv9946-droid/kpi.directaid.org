@@ -1093,7 +1093,10 @@ class Component extends DCLogic {
   };
   _loadPeriodForYear(month, year){
     let cur = this._getStored(month, year);
-    if(!cur){ cur = (month===this.SEED_MONTH && year===this.SEED_YEAR) ? { ...this._deptDefaults() } : {}; }
+    if(!cur){
+      const d = this._dept();
+      cur = ((d==='mkt'||d==='emkt') && month===this.SEED_MONTH && year===this.SEED_YEAR) ? { ...this._deptDefaults() } : {};
+    }
     this.setState({ current: cur });
   }
 
@@ -1159,7 +1162,7 @@ class Component extends DCLogic {
   _saveMktFor(month, cur){ try { localStorage.setItem(this._mktKey(month), JSON.stringify(cur)); } catch(e){} }
   _saveMkt(cur){ this._saveMktFor(this.state.period, cur); }
   _hasData(cur){ return cur && Object.keys(cur).some(k=> cur[k]!=='' && cur[k]!==null && !isNaN(cur[k])); }
-  setPeriod = (e) => { const p = e.target.value; this.setState({ period: p }); if(p!=='كل الشهور') this._loadPeriod(p); this._lastKey=null; };
+  setPeriod = (e) => { const p = e.target.value; if(p!=='كل الشهور') this._loadPeriodForYear(p, this.state.year); this.setState({ period: p }); this._lastKey=null; };
   setYear = (e) => {
     const y = e.target.value; const m = this.state.period;
     // load stored data for the same month under the new year
