@@ -123,9 +123,7 @@
         }
       }
     }
-    if (changed) { pendingReload = true; logActivity(changedKeys); }
-    // إن لم يكن المستخدم يكتب الآن، اعكس التغييرات فورًا؛ وإلا انتظر حتى يتوقف
-    if (pendingReload && !isEditing() && Object.keys(pending).length === 0) softRefresh();
+    if (changed) { pendingReload = true; logActivity(changedKeys); scheduleReload(); }
     return changed;
   }
 
@@ -135,19 +133,20 @@
   }
 
   var reloadTimer = null;
-  var lastReloadAt = 0;
-  function softRefresh() {
-    if (reloadTimer) return;
-    // تجميع دفعات التغييرات المتلاحقة، ومنع إعادة تحميل متكررة خلال فترة قصيرة
-    var wait = Math.max(400, 4000 - (Date.now() - lastReloadAt));
-    reloadTimer = setTimeout(function () { lastReloadAt = Date.now(); location.reload(); }, wait);
+  // ديبونس: كل تغيير جديد يؤجّل المؤقت، فتنتظر الشاشة حتى يهدأ الطرف الآخر (يتوقف عن الإرسال)
+  // قبل إعادة التحميل مرة واحدة — فلا تومض الشاشة أثناء تعديل متواصل (كتابة طويلة، جدول كامل).
+  function scheduleReload() {
+    if (reloadTimer) clearTimeout(reloadTimer);
+    reloadTimer = setTimeout(function () {
+      reloadTimer = null;
+      if (!isEditing() && Object.keys(pending).length === 0) location.reload();
+      else scheduleReload(); // مازال مشغولًا/يرسل → أرجئ
+    }, 1200);
   }
 
-  // متى ما توقّف المستخدم عن الكتابة، اعكس تغييرات الآخرين المعلّقة
+  // متى ما توقّف المستخدم عن الكتابة، أعِد جدولة أي إعادة تحميل مؤجّلة
   document.addEventListener('focusout', function () {
-    setTimeout(function () {
-      if (pendingReload && !isEditing() && Object.keys(pending).length === 0) softRefresh();
-    }, 300);
+    setTimeout(function () { if (pendingReload) scheduleReload(); }, 300);
   });
 
   // ——— البث اللحظي (SSE): المسار الأساسي لظهور التعديلات بلا تأخير ———
