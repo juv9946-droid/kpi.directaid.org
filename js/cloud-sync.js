@@ -260,6 +260,29 @@
     }).join('');
   }
 
+  // ——— استئناف الاتصال عند عودة الجوال من الخلفية ———
+  // متصفحات الجوال تُجمّد الاتصال والمؤقتات عند تصغير التطبيق/قفل الشاشة،
+  // فيبقى البث اللحظي "مفتوحًا" شكليًا لكنه ميت. عند العودة نعيد الاتصال ونسحب فورًا.
+  function resumeFromBackground() {
+    if (!online && !es) return; // لم يُقلع النظام بعد بنجاح
+    try { if (es) es.close(); } catch (e) {}
+    es = null;
+    api('/api/state')
+      .then(function (res) {
+        lastTs = res.ts || 0;
+        applyRemote(res.data || {});
+        openStream();
+      })
+      .catch(function () {});
+  }
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') resumeFromBackground();
+  });
+  window.addEventListener('pageshow', function (ev) {
+    if (ev.persisted) resumeFromBackground(); // رجوع من ذاكرة bfcache
+  });
+  window.addEventListener('focus', resumeFromBackground);
+
   // ——— الإقلاع: القاعدة السحابية هي المصدر الوحيد للبيانات ———
   function boot() {
     mountRefreshButton();
