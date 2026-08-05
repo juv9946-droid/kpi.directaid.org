@@ -99,7 +99,9 @@
   }
 
   // ——— سحب تغييرات الآخرين ———
-  function applyRemote(data) {
+  // full=true فقط عند سحب كامل (/api/state): تُطابق التخزين المحلي مع القاعدة
+  // تمامًا، فتحذف أي مفاتيح محلية قديمة (من قبل تفعيل السحابة) غير موجودة في القاعدة.
+  function applyRemote(data, full) {
     var changed = false;
     var changedKeys = [];
     Object.keys(data).forEach(function (k) {
@@ -111,6 +113,16 @@
         changedKeys.push(k);
       }
     });
+    if (full) {
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var lk = localStorage.key(i);
+        if (isKpiKey(lk) && !(lk in data)) {
+          origRemove(lk);
+          changed = true;
+          changedKeys.push(lk);
+        }
+      }
+    }
     if (changed) { pendingReload = true; logActivity(changedKeys); }
     // إن لم يكن المستخدم يكتب الآن، اعكس التغييرات فورًا؛ وإلا انتظر حتى يتوقف
     if (pendingReload && !isEditing() && Object.keys(pending).length === 0) softRefresh();
@@ -196,7 +208,7 @@
       .then(function (res) {
         online = true;
         lastTs = res.ts || 0;
-        var changed = applyRemote(res.data || {});
+        var changed = applyRemote(res.data || {}, true);
         if (!changed) { if (btn) { btn.classList.remove('__spin'); btn.style.opacity = '1'; } }
         // إن تغيّرت البيانات ستُعاد الصفحة تلقائيًا داخل applyRemote
       })
@@ -270,7 +282,7 @@
     api('/api/state')
       .then(function (res) {
         lastTs = res.ts || 0;
-        applyRemote(res.data || {});
+        applyRemote(res.data || {}, true);
         openStream();
       })
       .catch(function () {});
@@ -292,7 +304,7 @@
         online = true;
         lastTs = res.ts || 0;
         booting = true;
-        var changed = applyRemote(res.data || {});
+        var changed = applyRemote(res.data || {}, true);
         booting = false;
         window.__KPI_CLOUD__ = { online: true };
         banner('', '');
