@@ -209,7 +209,11 @@
         online = true;
         lastTs = res.ts || 0;
         var changed = applyRemote(res.data || {}, true);
-        if (!changed) { if (btn) { btn.classList.remove('__spin'); btn.style.opacity = '1'; } }
+        if (!changed) {
+          if (btn) { btn.classList.remove('__spin'); btn.style.opacity = '1'; }
+          banner('✓ البيانات محدَّثة بالفعل', '#15803D');
+          setTimeout(function () { banner('', ''); }, 1500);
+        }
         // إن تغيّرت البيانات ستُعاد الصفحة تلقائيًا داخل applyRemote
       })
       .catch(function () {
