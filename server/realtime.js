@@ -13,6 +13,7 @@ function addClient(req, res) {
     'X-Accel-Buffering': 'no',
   });
   res.write(': connected\n\n');
+  res.__cid = req.query && req.query.c ? String(req.query.c) : null; // هوية هذا المتصفح لتفادي إعادة إرسال تعديلاته لنفسه
   clients.add(res);
 
   // نبضة حقيقية كـ data event (وليست تعليقًا) ليتحقّق العميل من حيوية الاتصال فعليًا
@@ -34,9 +35,9 @@ function send(res, payload) {
   }
 }
 
-function broadcast(payload, exclude) {
+function broadcast(payload, excludeClientId) {
   for (const res of clients) {
-    if (res === exclude) continue;
+    if (excludeClientId && res.__cid === excludeClientId) continue;
     send(res, payload);
   }
 }

@@ -135,10 +135,12 @@
   }
 
   var reloadTimer = null;
+  var lastReloadAt = 0;
   function softRefresh() {
     if (reloadTimer) return;
-    // تجميع دفعات التغييرات المتلاحقة في إعادة عرض واحدة
-    reloadTimer = setTimeout(function () { location.reload(); }, 150);
+    // تجميع دفعات التغييرات المتلاحقة، ومنع إعادة تحميل متكررة خلال فترة قصيرة
+    var wait = Math.max(400, 4000 - (Date.now() - lastReloadAt));
+    reloadTimer = setTimeout(function () { lastReloadAt = Date.now(); location.reload(); }, wait);
   }
 
   // متى ما توقّف المستخدم عن الكتابة، اعكس تغييرات الآخرين المعلّقة
