@@ -4,32 +4,17 @@
  *
  * - عند الفتح: تسحب كل البيانات من الخادم وتضعها في المتصفح.
  * - عند أي تعديل: تدفعه فورًا إلى الخادم ليراه بقية الموظفين.
- * - اتصال بث لحظي دائم (SSE): أي تعديل من أي مستخدم يظهر عند الجميع في نفس اللحظة.
+ * - اتصال بث لحظي (SSE): أي تعديل من أي مستخدم يظهر عند الجميع خلال لحظات.
  * - إن تعذّر البث اللحظي، ترجع تلقائيًا إلى السحب الدوري كخطة بديلة.
  *
  * إذا فُتح الملف بدون خادم (كملف محلي)، يعمل النظام بوضع محلي دون مزامنة.
  */
 (function () {
-  // ——— ستارة إخفاء: تُوضع فور التحميل لتخفي وميض الشاشة الأبيض عند إعادة التحميل ———
-  var __curtain = document.createElement('div');
-  (function () {
-    var m = document.querySelector('meta[name="theme-color"]');
-    var bg = (m && m.content) || '#0E1A33';
-    __curtain.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:' + bg + ';opacity:1;pointer-events:none;transition:opacity .28s ease';
-    document.documentElement.appendChild(__curtain);
-  })();
-  function curtainOut() { requestAnimationFrame(function () { requestAnimationFrame(function () { __curtain.style.opacity = '0'; }); }); }
-  function curtainIn(cb) { __curtain.style.opacity = '1'; setTimeout(cb, 220); }
-  if (document.readyState === 'complete') curtainOut();
-  else window.addEventListener('load', curtainOut);
-  setTimeout(curtainOut, 2500); // شبكة أمان إن تأخّر حدث load
-
   var PREFIX = 'kpi';                  // نُزامن كل مفاتيح النظام (kpi_, kpitbl_, kpiytbl_, kpichan_, kpidig_, kpifol_, kpimig_ ...)
   var API = '';                        // نفس النطاق (الخادم يخدم الواجهة)
- var POLL_MS = 2500;                  // خطة بديلة: سحب دوري إن تعذّر البث اللحظي
+  var POLL_MS = 2500;                  // خطة بديلة: سحب دوري إن تعذّر البث اللحظي
   var CLIENT_ID = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
   var es = null;                       // اتصال البث اللحظي
-  var polling = false;
   var lastTs = 0;
   var online = false;
   var pushTimer = null;
@@ -51,7 +36,7 @@
     if (!online) return;
     pending[key] = true;
     if (pushTimer) return;
-    pushTimer = setTimeout(flushPush, 120);
+    pushTimer = setTimeout(flushPush, 300);
   }
   function flushPush() {
     pushTimer = null;
@@ -66,7 +51,7 @@
     });
     api('/api/bulk', { method: 'POST', body: JSON.stringify({ items: items }) })
       .then(function (res) { if (res && res.ts) lastTs = Math.max(lastTs, res.ts); })
-      .catch(function () { /* يُعاد المحاولة في الدورة التالية */ keys.forEach(function (k) { pending[k] = true; }); });
+      .catch(function () { keys.forEach(function (k) { pending[k] = true; }); });
   }
 
   // اعتراض الكتابة المحلية لدفعها للخادم
@@ -76,7 +61,7 @@
   };
   localStorage.removeItem = function (k) {
     origRemove(k);
-    if (isKpiKey(k)) schedulePush(k); // القيمة أصبحت غير موجودة → تُدفع كـ null
+    if (isKpiKey(k)) schedulePush(k);
   };
 
   var pendingReload = false;
@@ -93,7 +78,7 @@
   function loadActivity() { try { return JSON.parse(localStorage.getItem('__kpi_activity') || '[]'); } catch (e) { return []; } }
   function saveActivity(a) { try { origSet('__kpi_activity', JSON.stringify(a.slice(0, 40))); } catch (e) {} }
   function logActivity(keys) {
-    if (booting) return; // لا نُسجّل التحميل الأول كإشعارات
+    if (booting) return;
     var labels = {};
     keys.forEach(function (k) { labels[deptLabel(k)] = true; });
     var now = Date.now();
@@ -113,8 +98,8 @@
   }
 
   // ——— سحب تغييرات الآخرين ———
-  // full=true فقط عند سحب كامل (/api/state): تُطابق التخزين المحلي مع القاعدة
-  // تمامًا، فتحذف أي مفاتيح محلية قديمة (من قبل تفعيل السحابة) غير موجودة في القاعدة.
+  // full=true فقط عند سحب كامل (/api/state): تُطابق التخزين المحلي مع القاعدة تمامًا،
+  // فتحذف أي مفاتيح محلية قديمة (من قبل تفعيل السحابة) غير موجودة في القاعدة.
   function applyRemote(data, full) {
     var changed = false;
     var changedKeys = [];
@@ -137,7 +122,8 @@
         }
       }
     }
-    if (changed) { pendingReload = true; logActivity(changedKeys); scheduleReload(); }
+    if (changed) { pendingReload = true; logActivity(changedKeys); }
+    if (pendingReload && !isEditing() && Object.keys(pending).length === 0) softRefresh();
     return changed;
   }
 
@@ -147,32 +133,24 @@
   }
 
   var reloadTimer = null;
-  // ديبونس: كل تغيير جديد يؤجّل المؤقت، فتنتظر الشاشة حتى يهدأ الطرف الآخر (يتوقف عن الإرسال)
-  // قبل إعادة التحميل مرة واحدة — فلا تومض الشاشة أثناء تعديل متواصل (كتابة طويلة، جدول كامل).
-  function scheduleReload() {
-    if (reloadTimer) clearTimeout(reloadTimer);
-    reloadTimer = setTimeout(function () {
-      reloadTimer = null;
-      if (!isEditing() && Object.keys(pending).length === 0) curtainIn(function () { location.reload(); });
-      else scheduleReload(); // مازال مشغولًا/يرسل → أرجئ
-    }, 1200);
+  function softRefresh() {
+    if (reloadTimer) return;
+    reloadTimer = setTimeout(function () { location.reload(); }, 300);
   }
 
-  // متى ما توقّف المستخدم عن الكتابة، أعِد جدولة أي إعادة تحميل مؤجّلة
   document.addEventListener('focusout', function () {
-    setTimeout(function () { if (pendingReload) scheduleReload(); }, 300);
+    setTimeout(function () {
+      if (pendingReload && !isEditing() && Object.keys(pending).length === 0) softRefresh();
+    }, 300);
   });
 
   // ——— البث اللحظي (SSE): المسار الأساسي لظهور التعديلات بلا تأخير ———
-  var lastEventAt = 0; // آخر مرة وصل فيها أي شيء فعليًا عبر الاتصال (بيانات أو نبضة)
   function openStream() {
     if (!window.EventSource) return false;
     try { if (es) es.close(); } catch (e) {}
     try { es = new EventSource(API + '/api/stream?ts=' + lastTs + '&c=' + CLIENT_ID); } catch (e) { return false; }
-    lastEventAt = Date.now();
-    es.onopen = function () { online = true; lastEventAt = Date.now(); banner('', ''); };
+    es.onopen = function () { online = true; banner('', ''); };
     es.onmessage = function (ev) {
-      lastEventAt = Date.now();
       var m = null;
       try { m = JSON.parse(ev.data); } catch (e) { return; }
       if (!m || m.ping) return;
@@ -181,7 +159,6 @@
       mountRefreshButton(); mountBell();
     };
     es.onerror = function () {
-      // الشبكة انقطعت أو الوسيط أغلق الاتصال → أعِد المحاولة
       try { es.close(); } catch (e) {}
       es = null;
       setTimeout(function () { if (!es) openStream(); }, 3000);
@@ -189,23 +166,16 @@
     return true;
   }
 
-  // حارس حيوية الاتصال: بعض الوسطاء (مثل بروكسي Render) قد يُبقي الاتصال مفتوحًا شكليًا
-  // دون تمرير أي بيانات. إن لم تصل أي رسالة (بيانات أو نبضة) خلال 35 ثانية نعيد فتح الاتصال.
-  setInterval(function () {
-    if (es && lastEventAt && Date.now() - lastEventAt > 35000) { try { es.close(); } catch (e) {} es = null; openStream(); }
-  }, 10000);
-
-  // شبكة أمان دائمة: سحب دوري للتغييرات يعمل جنبًا إلى جنب مع البث اللحظي،
-  // ليصل التحديث حتى لو تعطّل البث بصمت خلف وسيط ما.
   function poll() {
     if (!online) return;
-    mountRefreshButton(); mountBell();   // إعادة الحقن إن أزالها إعادة رسم التطبيق
+    if (es) return; // البث اللحظي يكفي
+    mountRefreshButton(); mountBell();
     api('/api/since?ts=' + lastTs)
       .then(function (res) {
         if (res && res.data) { applyRemote(res.data); if (res.ts) lastTs = Math.max(lastTs, res.ts); }
       })
       .catch(function () {})
-      .then(function () { setTimeout(poll, es ? 6000 : POLL_MS); });
+      .then(function () { setTimeout(poll, POLL_MS); });
   }
 
   function banner(msg, color) {
@@ -224,7 +194,7 @@
 
   var retries = 0;
 
-  // ——— زر التحديث اليدوي (يسحب أحدث البيانات من القاعدة ويعيد العرض) ———
+  // ——— زر التحديث اليدوي ———
   function forceSync() {
     var btn = document.getElementById('__kpi_refresh_btn');
     if (btn) { btn.classList.add('__spin'); btn.style.opacity = '0.6'; }
@@ -238,7 +208,6 @@
           banner('✓ البيانات محدَّثة بالفعل', '#15803D');
           setTimeout(function () { banner('', ''); }, 1500);
         }
-        // إن تغيّرت البيانات ستُعاد الصفحة تلقائيًا داخل applyRemote
       })
       .catch(function () {
         if (btn) { btn.classList.remove('__spin'); btn.style.opacity = '1'; }
@@ -301,10 +270,8 @@
   }
 
   // ——— استئناف الاتصال عند عودة الجوال من الخلفية ———
-  // متصفحات الجوال تُجمّد الاتصال والمؤقتات عند تصغير التطبيق/قفل الشاشة،
-  // فيبقى البث اللحظي "مفتوحًا" شكليًا لكنه ميت. عند العودة نعيد الاتصال ونسحب فورًا.
   function resumeFromBackground() {
-    if (!online && !es) return; // لم يُقلع النظام بعد بنجاح
+    if (!online && !es) return;
     try { if (es) es.close(); } catch (e) {}
     es = null;
     api('/api/state')
@@ -319,7 +286,7 @@
     if (document.visibilityState === 'visible') resumeFromBackground();
   });
   window.addEventListener('pageshow', function (ev) {
-    if (ev.persisted) resumeFromBackground(); // رجوع من ذاكرة bfcache
+    if (ev.persisted) resumeFromBackground();
   });
   window.addEventListener('focus', resumeFromBackground);
 
@@ -336,19 +303,14 @@
         booting = false;
         window.__KPI_CLOUD__ = { online: true };
         banner('', '');
-        openStream();
-        setTimeout(poll, POLL_MS);
+        if (!openStream() && !changed) setTimeout(poll, POLL_MS);
       })
       .catch(function () {
         online = false;
         retries++;
         window.__KPI_CLOUD__ = { online: false };
-        // بعد عدة محاولات فاشلة نفترض أن الخادم غير مُشغّل (وضع معاينة قبل النشر)
-        if (retries >= 3) {
-          banner('', '');
-        } else {
-          banner('⏳ جارٍ الاتصال بقاعدة البيانات السحابية…', '#B45309');
-        }
+        if (retries >= 3) banner('', '');
+        else banner('⏳ جارٍ الاتصال بقاعدة البيانات السحابية…', '#B45309');
         setTimeout(boot, 3000);
       });
   }
@@ -358,6 +320,5 @@
   } else {
     boot();
   }
-  // ضمان بقاء الأزرار ظاهرة حتى لو أعاد التطبيق رسم الصفحة
   setInterval(function () { mountRefreshButton(); mountBell(); }, 2000);
 })();
