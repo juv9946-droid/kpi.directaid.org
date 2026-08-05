@@ -149,39 +149,48 @@
   });
 
   // ——— البث اللحظي (SSE): المسار الأساسي لظهور التعديلات بلا تأخير ———
+  var lastEventAt = 0; // آخر مرة وصل فيها أي شيء فعليًا عبر الاتصال (بيانات أو نبضة)
   function openStream() {
     if (!window.EventSource) return false;
     try { if (es) es.close(); } catch (e) {}
     try { es = new EventSource(API + '/api/stream?ts=' + lastTs + '&c=' + CLIENT_ID); } catch (e) { return false; }
-    es.onopen = function () { online = true; banner('', ''); };
+    lastEventAt = Date.now();
+    es.onopen = function () { online = true; lastEventAt = Date.now(); banner('', ''); };
     es.onmessage = function (ev) {
+      lastEventAt = Date.now();
       var m = null;
       try { m = JSON.parse(ev.data); } catch (e) { return; }
-      if (!m) return;
+      if (!m || m.ping) return;
       if (m.ts) lastTs = Math.max(lastTs, m.ts);
       if (m.data) applyRemote(m.data);
       mountRefreshButton(); mountBell();
     };
     es.onerror = function () {
-      // الشبكة انقطعت أو الوسيط أغلق الاتصال → أعِد المحاولة، ونشّط السحب الدوري مؤقتًا
+      // الشبكة انقطعت أو الوسيط أغلق الاتصال → أعِد المحاولة
       try { es.close(); } catch (e) {}
       es = null;
-      if (!polling) { polling = true; poll(); }
-      setTimeout(function () { if (!es) { if (openStream()) polling = false; } }, 3000);
+      setTimeout(function () { if (!es) openStream(); }, 3000);
     };
     return true;
   }
 
+  // حارس حيوية الاتصال: بعض الوسطاء (مثل بروكسي Render) قد يُبقي الاتصال مفتوحًا شكليًا
+  // دون تمرير أي بيانات. إن لم تصل أي رسالة (بيانات أو نبضة) خلال 35 ثانية نعيد فتح الاتصال.
+  setInterval(function () {
+    if (es && lastEventAt && Date.now() - lastEventAt > 35000) { try { es.close(); } catch (e) {} es = null; openStream(); }
+  }, 10000);
+
+  // شبكة أمان دائمة: سحب دوري للتغييرات يعمل جنبًا إلى جنب مع البث اللحظي،
+  // ليصل التحديث حتى لو تعطّل البث بصمت خلف وسيط ما.
   function poll() {
     if (!online) return;
-    if (es) { polling = false; return; }   // البث اللحظي يكفي
     mountRefreshButton(); mountBell();   // إعادة الحقن إن أزالها إعادة رسم التطبيق
     api('/api/since?ts=' + lastTs)
       .then(function (res) {
         if (res && res.data) { applyRemote(res.data); if (res.ts) lastTs = Math.max(lastTs, res.ts); }
       })
       .catch(function () {})
-      .then(function () { if (!es) setTimeout(poll, POLL_MS); else polling = false; });
+      .then(function () { setTimeout(poll, es ? 6000 : POLL_MS); });
   }
 
   function banner(msg, color) {
@@ -312,7 +321,8 @@
         booting = false;
         window.__KPI_CLOUD__ = { online: true };
         banner('', '');
-        if (!openStream() && !changed) { polling = true; setTimeout(poll, POLL_MS); }
+        openStream();
+        setTimeout(poll, POLL_MS);
       })
       .catch(function () {
         online = false;

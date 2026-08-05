@@ -15,9 +15,10 @@ function addClient(req, res) {
   res.write(': connected\n\n');
   clients.add(res);
 
+  // نبضة حقيقية كـ data event (وليست تعليقًا) ليتحقّق العميل من حيوية الاتصال فعليًا
   const ping = setInterval(() => {
-    try { res.write(': ping\n\n'); } catch (e) { /* ignored */ }
-  }, 20000);
+    send(res, { ping: true, ts: Date.now() });
+  }, 15000);
 
   req.on('close', () => {
     clearInterval(ping);
