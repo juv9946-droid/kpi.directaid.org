@@ -10,7 +10,21 @@
  * إذا فُتح الملف بدون خادم (كملف محلي)، يعمل النظام بوضع محلي دون مزامنة.
  */
 (function () {
- var PREFIX = 'kpi';                  // نُزامن كل مفاتيح النظام (kpi_, kpitbl_, kpiytbl_, kpichan_, kpidig_, kpifol_, kpimig_ ...)
+  // ——— ستارة إخفاء: تُوضع فور التحميل لتخفي وميض الشاشة الأبيض عند إعادة التحميل ———
+  var __curtain = document.createElement('div');
+  (function () {
+    var m = document.querySelector('meta[name="theme-color"]');
+    var bg = (m && m.content) || '#0E1A33';
+    __curtain.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:' + bg + ';opacity:1;pointer-events:none;transition:opacity .28s ease';
+    document.documentElement.appendChild(__curtain);
+  })();
+  function curtainOut() { requestAnimationFrame(function () { requestAnimationFrame(function () { __curtain.style.opacity = '0'; }); }); }
+  function curtainIn(cb) { __curtain.style.opacity = '1'; setTimeout(cb, 220); }
+  if (document.readyState === 'complete') curtainOut();
+  else window.addEventListener('load', curtainOut);
+  setTimeout(curtainOut, 2500); // شبكة أمان إن تأخّر حدث load
+
+  var PREFIX = 'kpi';                  // نُزامن كل مفاتيح النظام (kpi_, kpitbl_, kpiytbl_, kpichan_, kpidig_, kpifol_, kpimig_ ...)
   var API = '';                        // نفس النطاق (الخادم يخدم الواجهة)
  var POLL_MS = 2500;                  // خطة بديلة: سحب دوري إن تعذّر البث اللحظي
   var CLIENT_ID = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
@@ -139,7 +153,7 @@
     if (reloadTimer) clearTimeout(reloadTimer);
     reloadTimer = setTimeout(function () {
       reloadTimer = null;
-      if (!isEditing() && Object.keys(pending).length === 0) location.reload();
+      if (!isEditing() && Object.keys(pending).length === 0) curtainIn(function () { location.reload(); });
       else scheduleReload(); // مازال مشغولًا/يرسل → أرجئ
     }, 1200);
   }
