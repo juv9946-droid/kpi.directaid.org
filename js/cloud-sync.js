@@ -4,17 +4,18 @@
  *
  * - عند الفتح: تسحب كل البيانات من الخادم وتضعها في المتصفح.
  * - عند أي تعديل: تدفعه فورًا إلى الخادم ليراه بقية الموظفين.
- * - اتصال بث لحظي (SSE): أي تعديل من أي مستخدم يظهر عند الجميع خلال لحظات.
+ * - اتصال بث لحظي دائم (SSE): أي تعديل من أي مستخدم يظهر عند الجميع في نفس اللحظة.
  * - إن تعذّر البث اللحظي، ترجع تلقائيًا إلى السحب الدوري كخطة بديلة.
  *
  * إذا فُتح الملف بدون خادم (كملف محلي)، يعمل النظام بوضع محلي دون مزامنة.
  */
 (function () {
-  var PREFIX = 'kpi';                  // نُزامن كل مفاتيح النظام (kpi_, kpitbl_, kpiytbl_, kpichan_, kpidig_, kpifol_, kpimig_ ...)
+  var PREFIX = 'kpi_';                 // نُزامن فقط مفاتيح النظام
   var API = '';                        // نفس النطاق (الخادم يخدم الواجهة)
   var POLL_MS = 2500;                  // خطة بديلة: سحب دوري إن تعذّر البث اللحظي
   var CLIENT_ID = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
   var es = null;                       // اتصال البث اللحظي
+  var polling = false;
   var lastTs = 0;
   var online = false;
   var pushTimer = null;
@@ -26,14 +27,6 @@
 
   function isKpiKey(k) { return typeof k === 'string' && k.indexOf(PREFIX) === 0; }
 
-  // مقارنة قيم بلا حساسية لترتيب مفاتيح الكائن — MySQL قد يُعيد ترتيب مفاتيح JSON عند التخزين،
-  // فمقارنة JSON.stringify الخام كانت تكتشف "تغييرًا" زائفًا في كل دورة حتى بلا أي تعديل فعلي.
-  function stableStringify(v) {
-    if (v === null || typeof v !== 'object') return JSON.stringify(v);
-    if (Array.isArray(v)) return '[' + v.map(stableStringify).join(',') + ']';
-    return '{' + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ':' + stableStringify(v[k]); }).join(',') + '}';
-  }
-
   function api(path, opts) {
     return fetch(API + path, Object.assign({ headers: { 'Content-Type': 'application/json', 'X-KPI-Client': CLIENT_ID }, cache: 'no-store' }, opts))
       .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); });
@@ -44,7 +37,7 @@
     if (!online) return;
     pending[key] = true;
     if (pushTimer) return;
-    pushTimer = setTimeout(flushPush, 300);
+    pushTimer = setTimeout(flushPush, 120);
   }
   function flushPush() {
     pushTimer = null;
@@ -59,7 +52,7 @@
     });
     api('/api/bulk', { method: 'POST', body: JSON.stringify({ items: items }) })
       .then(function (res) { if (res && res.ts) lastTs = Math.max(lastTs, res.ts); })
-      .catch(function () { keys.forEach(function (k) { pending[k] = true; }); });
+      .catch(function () { /* يُعاد المحاولة في الدورة التالية */ keys.forEach(function (k) { pending[k] = true; }); });
   }
 
   // اعتراض الكتابة المحلية لدفعها للخادم
@@ -69,7 +62,7 @@
   };
   localStorage.removeItem = function (k) {
     origRemove(k);
-    if (isKpiKey(k)) schedulePush(k);
+    if (isKpiKey(k)) schedulePush(k); // القيمة أصبحت غير موجودة → تُدفع كـ null
   };
 
   var pendingReload = false;
@@ -86,7 +79,7 @@
   function loadActivity() { try { return JSON.parse(localStorage.getItem('__kpi_activity') || '[]'); } catch (e) { return []; } }
   function saveActivity(a) { try { origSet('__kpi_activity', JSON.stringify(a.slice(0, 40))); } catch (e) {} }
   function logActivity(keys) {
-    if (booting) return;
+    if (booting) return; // لا نُسجّل التحميل الأول كإشعارات
     var labels = {};
     keys.forEach(function (k) { labels[deptLabel(k)] = true; });
     var now = Date.now();
@@ -106,23 +99,15 @@
   }
 
   // ——— سحب تغييرات الآخرين ———
-  // full=true فقط عند سحب كامل (/api/state): تُطابق التخزين المحلي مع القاعدة تمامًا،
-  // فتحذف أي مفاتيح محلية قديمة (من قبل تفعيل السحابة) غير موجودة في القاعدة.
+  // full=true فقط عند سحب كامل (/api/state): تُطابق التخزين المحلي مع القاعدة
+  // تمامًا، فتحذف أي مفاتيح محلية قديمة (من قبل تفعيل السحابة) غير موجودة في القاعدة.
   function applyRemote(data, full) {
     var changed = false;
     var changedKeys = [];
     Object.keys(data).forEach(function (k) {
       if (!isKpiKey(k)) return;
       var incoming = JSON.stringify(data[k]);
-      var localRaw = localStorage.getItem(k);
-      var same;
-      if (localRaw == null) {
-        same = data[k] === null || data[k] === undefined;
-      } else {
-        try { same = stableStringify(JSON.parse(localRaw)) === stableStringify(data[k]); }
-        catch (e) { same = localRaw === incoming; }
-      }
-      if (!same) {
+      if (localStorage.getItem(k) !== incoming) {
         origSet(k, incoming);
         changed = true;
         changedKeys.push(k);
@@ -139,6 +124,7 @@
       }
     }
     if (changed) { pendingReload = true; logActivity(changedKeys); }
+    // إن لم يكن المستخدم يكتب الآن، اعكس التغييرات فورًا؛ وإلا انتظر حتى يتوقف
     if (pendingReload && !isEditing() && Object.keys(pending).length === 0) softRefresh();
     return changed;
   }
@@ -151,9 +137,11 @@
   var reloadTimer = null;
   function softRefresh() {
     if (reloadTimer) return;
-    reloadTimer = setTimeout(function () { location.reload(); }, 300);
+    // تجميع دفعات التغييرات المتلاحقة في إعادة عرض واحدة
+    reloadTimer = setTimeout(function () { location.reload(); }, 150);
   }
 
+  // متى ما توقّف المستخدم عن الكتابة، اعكس تغييرات الآخرين المعلّقة
   document.addEventListener('focusout', function () {
     setTimeout(function () {
       if (pendingReload && !isEditing() && Object.keys(pending).length === 0) softRefresh();
@@ -169,29 +157,31 @@
     es.onmessage = function (ev) {
       var m = null;
       try { m = JSON.parse(ev.data); } catch (e) { return; }
-      if (!m || m.ping) return;
+      if (!m) return;
       if (m.ts) lastTs = Math.max(lastTs, m.ts);
       if (m.data) applyRemote(m.data);
       mountRefreshButton(); mountBell();
     };
     es.onerror = function () {
+      // الشبكة انقطعت أو الوسيط أغلق الاتصال → أعِد المحاولة، ونشّط السحب الدوري مؤقتًا
       try { es.close(); } catch (e) {}
       es = null;
-      setTimeout(function () { if (!es) openStream(); }, 3000);
+      if (!polling) { polling = true; poll(); }
+      setTimeout(function () { if (!es) { if (openStream()) polling = false; } }, 3000);
     };
     return true;
   }
 
   function poll() {
     if (!online) return;
-    if (es) return; // البث اللحظي يكفي
-    mountRefreshButton(); mountBell();
+    if (es) { polling = false; return; }   // البث اللحظي يكفي
+    mountRefreshButton(); mountBell();   // إعادة الحقن إن أزالها إعادة رسم التطبيق
     api('/api/since?ts=' + lastTs)
       .then(function (res) {
         if (res && res.data) { applyRemote(res.data); if (res.ts) lastTs = Math.max(lastTs, res.ts); }
       })
       .catch(function () {})
-      .then(function () { setTimeout(poll, POLL_MS); });
+      .then(function () { if (!es) setTimeout(poll, POLL_MS); else polling = false; });
   }
 
   function banner(msg, color) {
@@ -210,7 +200,7 @@
 
   var retries = 0;
 
-  // ——— زر التحديث اليدوي ———
+  // ——— زر التحديث اليدوي (يسحب أحدث البيانات من القاعدة ويعيد العرض) ———
   function forceSync() {
     var btn = document.getElementById('__kpi_refresh_btn');
     if (btn) { btn.classList.add('__spin'); btn.style.opacity = '0.6'; }
@@ -219,11 +209,8 @@
         online = true;
         lastTs = res.ts || 0;
         var changed = applyRemote(res.data || {}, true);
-        if (!changed) {
-          if (btn) { btn.classList.remove('__spin'); btn.style.opacity = '1'; }
-          banner('✓ البيانات محدَّثة بالفعل', '#15803D');
-          setTimeout(function () { banner('', ''); }, 1500);
-        }
+        if (!changed) { if (btn) { btn.classList.remove('__spin'); btn.style.opacity = '1'; } }
+        // إن تغيّرت البيانات ستُعاد الصفحة تلقائيًا داخل applyRemote
       })
       .catch(function () {
         if (btn) { btn.classList.remove('__spin'); btn.style.opacity = '1'; }
@@ -286,8 +273,10 @@
   }
 
   // ——— استئناف الاتصال عند عودة الجوال من الخلفية ———
+  // متصفحات الجوال تُجمّد الاتصال والمؤقتات عند تصغير التطبيق/قفل الشاشة،
+  // فيبقى البث اللحظي "مفتوحًا" شكليًا لكنه ميت. عند العودة نعيد الاتصال ونسحب فورًا.
   function resumeFromBackground() {
-    if (!online && !es) return;
+    if (!online && !es) return; // لم يُقلع النظام بعد بنجاح
     try { if (es) es.close(); } catch (e) {}
     es = null;
     api('/api/state')
@@ -302,7 +291,7 @@
     if (document.visibilityState === 'visible') resumeFromBackground();
   });
   window.addEventListener('pageshow', function (ev) {
-    if (ev.persisted) resumeFromBackground();
+    if (ev.persisted) resumeFromBackground(); // رجوع من ذاكرة bfcache
   });
   window.addEventListener('focus', resumeFromBackground);
 
@@ -319,14 +308,18 @@
         booting = false;
         window.__KPI_CLOUD__ = { online: true };
         banner('', '');
-        if (!openStream() && !changed) setTimeout(poll, POLL_MS);
+        if (!openStream() && !changed) { polling = true; setTimeout(poll, POLL_MS); }
       })
       .catch(function () {
         online = false;
         retries++;
         window.__KPI_CLOUD__ = { online: false };
-        if (retries >= 3) banner('', '');
-        else banner('⏳ جارٍ الاتصال بقاعدة البيانات السحابية…', '#B45309');
+        // بعد عدة محاولات فاشلة نفترض أن الخادم غير مُشغّل (وضع معاينة قبل النشر)
+        if (retries >= 3) {
+          banner('', '');
+        } else {
+          banner('⏳ جارٍ الاتصال بقاعدة البيانات السحابية…', '#B45309');
+        }
         setTimeout(boot, 3000);
       });
   }
@@ -336,5 +329,6 @@
   } else {
     boot();
   }
+  // ضمان بقاء الأزرار ظاهرة حتى لو أعاد التطبيق رسم الصفحة
   setInterval(function () { mountRefreshButton(); mountBell(); }, 2000);
 })();

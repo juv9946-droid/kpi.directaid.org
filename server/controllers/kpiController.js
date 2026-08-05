@@ -27,7 +27,7 @@ exports.set = async (req, res) => {
     if (!key) return res.status(400).json({ ok: false, error: 'missing key' });
     const ts = Date.now();
     await store.upsert(key, value, ts);
-    rt.broadcast({ ts, data: { [key]: value } }, req.headers['x-kpi-client'] || null);
+    rt.broadcast({ ts, data: { [key]: value }, src: req.headers['x-kpi-client'] || null });
     res.json({ ok: true, ts });
   } catch (e) {
     res.status(500).json({ ok: false, error: String(e) });
@@ -41,7 +41,7 @@ exports.bulk = async (req, res) => {
     await store.bulkUpsert(items, ts);
     const data = {};
     for (const it of items) if (it && it.key) data[it.key] = it.value;
-    rt.broadcast({ ts, data }, req.headers['x-kpi-client'] || null);
+    rt.broadcast({ ts, data, src: req.headers['x-kpi-client'] || null });
     res.json({ ok: true, ts });
   } catch (e) {
     res.status(500).json({ ok: false, error: String(e) });
@@ -51,7 +51,6 @@ exports.bulk = async (req, res) => {
 /* اتصال البث اللحظي: يُبقى مفتوحًا ويستقبل كل تعديل لحظة حدوثه */
 exports.stream = async (req, res) => {
   rt.addClient(req, res);
-  // لحاق فوري بأي تغييرات حدثت قبل فتح الاتصال
   try {
     const from = Number(req.query.ts || 0);
     if (from > 0) {

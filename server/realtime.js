@@ -13,13 +13,11 @@ function addClient(req, res) {
     'X-Accel-Buffering': 'no',
   });
   res.write(': connected\n\n');
-  res.__cid = req.query && req.query.c ? String(req.query.c) : null; // هوية هذا المتصفح لتفادي إعادة إرسال تعديلاته لنفسه
   clients.add(res);
 
-  // نبضة حقيقية كـ data event (وليست تعليقًا) ليتحقّق العميل من حيوية الاتصال فعليًا
   const ping = setInterval(() => {
-    send(res, { ping: true, ts: Date.now() });
-  }, 15000);
+    try { res.write(': ping\n\n'); } catch (e) { /* ignored */ }
+  }, 20000);
 
   req.on('close', () => {
     clearInterval(ping);
@@ -35,9 +33,9 @@ function send(res, payload) {
   }
 }
 
-function broadcast(payload, excludeClientId) {
+function broadcast(payload, exclude) {
   for (const res of clients) {
-    if (excludeClientId && res.__cid === excludeClientId) continue;
+    if (res === exclude) continue;
     send(res, payload);
   }
 }
