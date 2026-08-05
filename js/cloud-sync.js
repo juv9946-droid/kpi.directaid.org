@@ -10,7 +10,7 @@
  * إذا فُتح الملف بدون خادم (كملف محلي)، يعمل النظام بوضع محلي دون مزامنة.
  */
 (function () {
-  var PREFIX = 'kpi_';                 // نُزامن فقط مفاتيح النظام
+ var PREFIX = 'kpi';                  // نُزامن كل مفاتيح النظام (kpi_, kpitbl_, kpiytbl_, kpichan_, kpidig_, kpifol_, kpimig_ ...)
   var API = '';                        // نفس النطاق (الخادم يخدم الواجهة)
  var POLL_MS = 2500;                  // خطة بديلة: سحب دوري إن تعذّر البث اللحظي
   var CLIENT_ID = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
