@@ -4,14 +4,18 @@
  *
  * - عند الفتح: تسحب كل البيانات من الخادم وتضعها في المتصفح.
  * - عند أي تعديل: تدفعه فورًا إلى الخادم ليراه بقية الموظفين.
- * - كل بضع ثوانٍ: تسحب تغييرات الآخرين وتحدّث الشاشة.
+ * - اتصال بث لحظي دائم (SSE): أي تعديل من أي مستخدم يظهر عند الجميع في نفس اللحظة.
+ * - إن تعذّر البث اللحظي، ترجع تلقائيًا إلى السحب الدوري كخطة بديلة.
  *
  * إذا فُتح الملف بدون خادم (كملف محلي)، يعمل النظام بوضع محلي دون مزامنة.
  */
 (function () {
   var PREFIX = 'kpi_';                 // نُزامن فقط مفاتيح النظام
   var API = '';                        // نفس النطاق (الخادم يخدم الواجهة)
-  var POLL_MS = 2500;                  // فترة سحب تغييرات الآخرين
+ var POLL_MS = 2500;                  // خطة بديلة: سحب دوري إن تعذّر البث اللحظي
+  var CLIENT_ID = String(Date.now()) + '-' + Math.random().toString(36).slice(2, 8);
+  var es = null;                       // اتصال البث اللحظي
+  var polling = false;
   var lastTs = 0;
   var online = false;
   var pushTimer = null;
@@ -24,7 +28,7 @@
   function isKpiKey(k) { return typeof k === 'string' && k.indexOf(PREFIX) === 0; }
 
   function api(path, opts) {
-    return fetch(API + path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts))
+    return fetch(API + path, Object.assign({ headers: { 'Content-Type': 'application/json', 'X-KPI-Client': CLIENT_ID }, cache: 'no-store' }, opts))
       .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); });
   }
 
@@ -33,7 +37,7 @@
     if (!online) return;
     pending[key] = true;
     if (pushTimer) return;
-    pushTimer = setTimeout(flushPush, 400);
+    pushTimer = setTimeout(flushPush, 120);
   }
   function flushPush() {
     pushTimer = null;
@@ -118,8 +122,11 @@
     return el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT');
   }
 
+  var reloadTimer = null;
   function softRefresh() {
-    location.reload();
+    if (reloadTimer) return;
+    // تجميع دفعات التغييرات المتلاحقة في إعادة عرض واحدة
+    reloadTimer = setTimeout(function () { location.reload(); }, 150);
   }
 
   // متى ما توقّف المستخدم عن الكتابة، اعكس تغييرات الآخرين المعلّقة
@@ -129,15 +136,40 @@
     }, 300);
   });
 
+  // ——— البث اللحظي (SSE): المسار الأساسي لظهور التعديلات بلا تأخير ———
+  function openStream() {
+    if (!window.EventSource) return false;
+    try { if (es) es.close(); } catch (e) {}
+    try { es = new EventSource(API + '/api/stream?ts=' + lastTs + '&c=' + CLIENT_ID); } catch (e) { return false; }
+    es.onopen = function () { online = true; banner('', ''); };
+    es.onmessage = function (ev) {
+      var m = null;
+      try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (!m) return;
+      if (m.ts) lastTs = Math.max(lastTs, m.ts);
+      if (m.data) applyRemote(m.data);
+      mountRefreshButton(); mountBell();
+    };
+    es.onerror = function () {
+      // الشبكة انقطعت أو الوسيط أغلق الاتصال → أعِد المحاولة، ونشّط السحب الدوري مؤقتًا
+      try { es.close(); } catch (e) {}
+      es = null;
+      if (!polling) { polling = true; poll(); }
+      setTimeout(function () { if (!es) { if (openStream()) polling = false; } }, 3000);
+    };
+    return true;
+  }
+
   function poll() {
     if (!online) return;
+    if (es) { polling = false; return; }   // البث اللحظي يكفي
     mountRefreshButton(); mountBell();   // إعادة الحقن إن أزالها إعادة رسم التطبيق
     api('/api/since?ts=' + lastTs)
       .then(function (res) {
         if (res && res.data) { applyRemote(res.data); if (res.ts) lastTs = Math.max(lastTs, res.ts); }
       })
       .catch(function () {})
-      .then(function () { setTimeout(poll, POLL_MS); });
+      .then(function () { if (!es) setTimeout(poll, POLL_MS); else polling = false; });
   }
 
   function banner(msg, color) {
@@ -241,7 +273,7 @@
         booting = false;
         window.__KPI_CLOUD__ = { online: true };
         banner('', '');
-        if (!changed) setTimeout(poll, POLL_MS);
+        if (!openStream() && !changed) { polling = true; setTimeout(poll, POLL_MS); }
       })
       .catch(function () {
         online = false;

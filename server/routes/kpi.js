@@ -5,6 +5,7 @@ const ctrl = require('../controllers/kpiController');
 
 router.get('/state', ctrl.state);
 router.get('/since', ctrl.since);
+router.get('/stream', ctrl.stream);
 router.post('/set', ctrl.set);
 router.post('/bulk', ctrl.bulk);
 router.get('/health', ctrl.health);
