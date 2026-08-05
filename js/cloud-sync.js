@@ -26,6 +26,14 @@
 
   function isKpiKey(k) { return typeof k === 'string' && k.indexOf(PREFIX) === 0; }
 
+  // مقارنة قيم بلا حساسية لترتيب مفاتيح الكائن — MySQL قد يُعيد ترتيب مفاتيح JSON عند التخزين،
+  // فمقارنة JSON.stringify الخام كانت تكتشف "تغييرًا" زائفًا في كل دورة حتى بلا أي تعديل فعلي.
+  function stableStringify(v) {
+    if (v === null || typeof v !== 'object') return JSON.stringify(v);
+    if (Array.isArray(v)) return '[' + v.map(stableStringify).join(',') + ']';
+    return '{' + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ':' + stableStringify(v[k]); }).join(',') + '}';
+  }
+
   function api(path, opts) {
     return fetch(API + path, Object.assign({ headers: { 'Content-Type': 'application/json', 'X-KPI-Client': CLIENT_ID }, cache: 'no-store' }, opts))
       .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); });
@@ -106,7 +114,15 @@
     Object.keys(data).forEach(function (k) {
       if (!isKpiKey(k)) return;
       var incoming = JSON.stringify(data[k]);
-      if (localStorage.getItem(k) !== incoming) {
+      var localRaw = localStorage.getItem(k);
+      var same;
+      if (localRaw == null) {
+        same = data[k] === null || data[k] === undefined;
+      } else {
+        try { same = stableStringify(JSON.parse(localRaw)) === stableStringify(data[k]); }
+        catch (e) { same = localRaw === incoming; }
+      }
+      if (!same) {
         origSet(k, incoming);
         changed = true;
         changedKeys.push(k);
